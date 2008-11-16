@@ -1,0 +1,34 @@
+TRANSLATION "lat"
+BEGIN
+"#Version" = "pre-0.1 lat"
+"#yepos" = "yepos"
+"#find" = "Inveni"
+"#ZLib error" = "ZLibi error"
+"#ZLib function failed" = "lapsus cum ^1() vocabatur\n"\
+ "erratum ^2"
+"#Close itself" = "Claudire"
+"#zlib error help" = "probabiliter memoria deest\n\n"\
+"datorum basem in scriptiones minores dividere coneris "\
+"aut non comprimere eas"
+"#yepos error" = "yepos labitur"
+"#no dictionary" = "vocabularium nullum inventum est"
+"#no_dictionary help" = "yepos inutilis est sine "\
+ "vocabularii datorum base\n\n"\
+ "pone vocabularium in memoriam meam si prodire vis"
+"#feature unimplemented" = "insignium datorum basis "\
+ "haec yepos editio adhunc non supportat"
+"#unimplemented help" = "datorum basis vocabularii tui "\
+ "probabiliter pro noviore yepos editionis creata est\n\n"\
+ "ponas novissimum yepos programma in memoriam meam"
+"#no_zlib help" = "vocabularia compressa "\
+ "sine librario systematis Zlib "\
+ "legere non possum\n\npone Zlib in memoriam meam si "\
+ "haec vocabularium uti vis"
+"#no zlib found" = "librarium Zlib non est inventum, "\
+ "cum vocabularium compressum est"
+"#no_memory help" = "dele data non necessaria de memoria mea"
+"#can't allocate memory" = "memoria deest"
+"#dictionary" = "Vocabularium"
+"#ok" = "Sic"
+"#cancel" = "Veto"
+END

@@ -1,0 +1,55 @@
+#include"control_ids.h"
+Version 1 "#Version"
+Form id MainForm_id at (0 0 160 160) noframe usable
+Begin
+ GraffitiStateIndicator AT (Right@159 Bottom@160)
+ Field id LookupField_id at (0 Bottom@160 PrevLeft auto) 
+  leftalign underlined singleline maxchars 32 usable editable
+End
+Form id SettingsForm_id at (0 0 160 160) noframe usable
+Begin
+ label "#dictionary" AutoID at (Center@80 0) font 1
+ PushButton "Db0" id Dictionary_Pushbutton_First_id at (1 PrevBottom+1 158 auto)
+ PushButton "Db1" id Dictionary_Pushbutton_First_id+1 at (1 PrevBottom+2 158 auto)
+ PushButton "Db2" id Dictionary_Pushbutton_First_id+2 at (1 PrevBottom+2 158 auto)
+ PushButton "Db3" id Dictionary_Pushbutton_First_id+3 at (1 PrevBottom+2 158 auto)
+ PushButton "Db4" id Dictionary_Pushbutton_First_id+4 at (1 PrevBottom+2 158 auto)
+ Button "#ok" id OK_Button_id at (Right@155 Bottom@158 auto 17)
+ Button "#cancel" id Cancel_Button_id at (Right@(PrevLeft-10) Bottom@158 auto 17)
+End
+
+String ZLib_Error_Help_id "#zlib error help"
+Alert ZLib_Error_Alert_id
+HelpID ZLib_Error_Help_id Error
+Begin Title "#ZLib error"
+ Message "#ZLib function failed"
+ Buttons "#Close itself"
+End
+String No_Dictionary_Alert_Help_id "#no_dictionary help"
+Alert No_Dictionary_Alert_id
+HelpID No_Dictionary_Alert_Help_id Error
+Begin Title "#yepos error"
+ Message "#no dictionary"
+ Buttons "#Close itself"
+End
+String Unimplemented_Alert_Help_id "#unimplemented help"
+Alert Unimplemented_Alert_id
+HelpID Unimplemented_Alert_Help_id Error
+Begin Title "#yepos error"
+ Message "#feature unimplemented"
+ Buttons "#Close itself"
+End
+String No_Zlib_Alert_Help_id "#no_zlib help"
+Alert No_Zlib_Alert_id
+HelpID No_Zlib_Alert_Help_id Error
+Begin Title "#yepos error"
+ Message "#no zlib found"
+ Buttons "#Close itself"
+End
+String Memory_Short_Alert_Help_id "#no_memory help"
+Alert Memory_Short_Alert_id
+HelpID Memory_Short_Alert_Help_id Error
+Begin Title "#yepos error"
+ Message "#can't allocate memory"
+ Buttons "#Close itself"
+End

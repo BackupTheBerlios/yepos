@@ -1,0 +1,34 @@
+TRANSLATION "en"
+BEGIN
+"#Version" = "pre-0.1 en"
+"#yepos" = "yepos"
+"#find" = "Find"
+"#ZLib error" = "ZLib error"
+"#ZLib function failed" = "failure on ^1() call\n"\
+ "error code ^2"
+"#Close itself" = "Close yourself"
+"#zlib error help" = "Probably there is no enough memory\n\n"\
+"You may want to try to split your database into lesser records "\
+"or not compress them"
+"#yepos error" = "yepos error"
+"#no dictionary" = "no dictionary found"
+"#no_dictionary help" = "yepos is useless without "\
+ "dictionary database\n\n"\
+ "install a dictionary in my memory to proceed"
+"#feature unimplemented" = "the database uses "\
+ "a feature unsupported by this version of yepos"
+"#unimplemented help" = "your dictionary database "\
+ "was probably created for a newer yepos version\n\n"\
+ "you could install a newer yepos version"
+"#no_zlib help" = "vocabularia compressa "\
+ "sine librario systematis Zlib "\
+ "legere non possum\n\npone Zlib in memoriam meam si "\
+ "haec vocabularium uti vis"
+"#no zlib found" = "librarium Zlib non est inventum, "\
+ "cum vocabularium compressum est"
+"#no_memory help" = "try deleting some unnecessary data"
+"#can't allocate memory" = "can't allocate memory"
+"#dictionary" = "Dictionary"
+"#ok" = "OK"
+"#cancel" = "Cancel"
+END

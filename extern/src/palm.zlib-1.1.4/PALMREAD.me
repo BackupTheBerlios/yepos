@@ -1,0 +1,72 @@
+For more information, see the ZLib home page at:
+
+http://www.info-zip.org/pub/infozip/zlib/
+
+Or http://www.palmos.com/devzone for information about Palm.
+
+1.1.4 update
+
+I now have integrated the 7.1 patch and use awk to create a version
+file, tver0001.bin - this is merely a null terminated string with
+"1.1.4-1" in it.
+
+WHAT IS IMPLEMENTED
+
+This is now implmented as a Palm System Shared library.  You
+technically don't need to call open and/or close (and there will be a
+problem if a called program unloads the library without verifying the
+open count).  But you do have to Find and/or Load the library.  A
+ZSetup and ZTeardown shim is included in the header.  See the unzip
+routine in boxer (www.palmboxer.com) to see how I use it.
+
+Everything except gzio - mainly because filestreams aren't used much,
+and I do some of this in Boxer, so it could be adapted there.
+
+Also some of the other internal routines (some of which are disabled
+in the source) like state copy or state reset are not available.
+
+Some routines are now #defined when they were real routines in ZLib
+(that just called the more general routine with default parameters).
+
+Routines have been moved from table entries to lookup routines so that
+all constant tables (the only global data) could be put in the text
+segment.
+
+zlib.h has the interface (which is used in boxer and a number of other
+routines), but that file itself isn't included by SysZLib.h It also
+describes the API in detail.
+
+It is set for m68k-palmos-gcc flavor tools with SDK 3.5, however the
+makefile mods for palmos-coff or earlier Palm SDKs are fairly easy.
+(Patches to automate this or for CodeWarrior are welcome).
+
+I tacked in the Lib reference word into the calls visible in the API.
+This was mainly to make the SysZLib.S easier.
+
+LIMITATIONS & NOTES
+
+MEM_LEVEL can be up to 8 in a real system, but since you can only
+allocate just under 64K using standard palm malloc routines, only up
+to 6 is usable for now (requiring 32k).  The NUM_BITS similarly is
+limited to 13 (8K window, requires 4x or 32K).  The larger the slower.
+Also the compressor will be much faster with a compression level of 3.
+Don't confuse Memory level, Number of Bits, and Compression level -
+read the docs.
+
+It can Inflate anything as long as 32K (plus about 4k) is available
+for buffers.
+
+Note that something other than Z_OK might be returned when it is not a
+real error - e.g. if the stream terminates without an EOF tag.  You
+need to keep calling inflate/deflate until no more data is returned.
+
+lmatch.S isn't too much faster than a C version, but I altered the
+original C file first (*scan++ works faster since it resolves to
+(%aX)++, but the original uses pre instead of post increment).
+
+I un-unrolled the loops in adler32 and crc32, but I have fewer
+instructions in my adapted versions per step, so the assembly is still
+faster.
+
+Compression is about 5K/sec with fairly aggressive
+parameters. Decompression is about 30K/sec.  YMMV.

@@ -1,0 +1,72 @@
+README file for yepos
+
+yepos is another dictionary program for PalmOS.
+it's primary features are:
+(0) RMS-sense freedom, you can use and distribute it under
+    the terms of the GNU GPLv3+
+(1) it is older devices-oriented:
+    it runs on PalmOS 2.0 (no restrictions on uncompressed databases,
+    some restrictions on maximum record size for compressed ones);
+    on PalmOS 3.0 and later without restrictions;
+    Palm IIIxe shall run it quite fluently;
+    generally, one of the most important goals is to to minimise
+    the power consumption
+(2) it's host-side programs are written in C within C89 standard
+    (apart from dependency on zlib), single object file per program,
+    so should be very portable and easy to build
+(3) it has both database compiler and decompiler to regenerate
+    the database source file bit-to-bit
+(4) compressed databases support (via SysZLib)
+(5) minimalistic user interface, e.g. find action is triggered with
+    carriage return stroke or `Find' hardware button; articles are
+    scrolled like in Weasel with tap on upper/lower half of the screen;
+    no form titles, no fancy buttons, no other non-functional decorations
+
+In current alpha state some essential features are yet to be
+implemented:
+(0) proper articles output:
+   (a) multiple modes (single line per article,
+       grammatical marks on/off, font/colour selections)
+   (b) show full contents of long articles
+
+Some not so important features that are also planned:
+(0) reverse search (in articles bodies rather than in their titles)
+(1) transliteration both for search input and sorting
+(2) databases in memory cards as well as in Palm RAM
+
+Not planned in foreseeable future:
+(0) multibyte encodings support
+
+There are other free dictionary programs available for PalmOS.
+Here I list reasons why I didn't like them
+(0) PalmOpenDic doesn't come with database decompiler;
+    it's host tools are written in Java
+    and I don't familiar with this language;
+    the most important - it is very intellectual, but it is slow.
+(2) PAdict is a wonderful work oriented on Japaneese
+(3) PocketBabylon can't read compressed databases
+
+yepos is free program; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+Although yepos is free, PalmOS is not, so it is not very ethical to
+support Palm producers by writing free programs that primarily run on their
+proprietary system. yepos author writes the program for personally historical
+reasons.
+
+Another necessary copyright note: files in extern/ directory are neigher
+copyrighted by yepos author, nor parts of yepos; they are used with it
+as external libraries. yepos authors distrubute them under the same terms
+as yepos. you also can get these files under their original
+(more permissive) licenses from their original distributors.
+for precise copyright statements see the respective files.
