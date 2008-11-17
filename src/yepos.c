@@ -646,9 +646,9 @@ main_form_handler(EventType*e)
 {switch(e->eType)
  {case frmOpenEvent:on_enter_main_form();break;
   case penDownEvent:
-   if(e->screenY<y0+articles_height)
+   if(e->screenY<y0+articles_height&&e->screenY>y0)
     show_next_article(e->screenY<(screen_height-y0)/2?-1:1);
-   break;
+   else return 0;break;
   case keyDownEvent:
    switch(((struct _KeyDownEventType*)(&(e->data)))->chr)
    {case vchrPageDown:show_next_article(1);break;
