@@ -586,30 +586,33 @@ goto_form(int id)
 void_handler(EventType*e){return 0;}
 static int
 show_next_article(int increment)
-{int inc=1;if(list_mode)inc=7;
- if(!current_db)return!0;
+{if(!current_db)return!0;if(!increment){show_article();return 0;}
  if(increment<0)
- {if(current_article<inc)
+ {increment=-increment;
+  if(current_article<increment)
   {MemHandleUnlock(idx_handles[0]);
    if(current_content_record==first_record(0))
-   {current_content_record=first_record(1)-1;
-   }else--current_content_record;
+    current_content_record=first_record(1)-1;
+   else--current_content_record;
    idx_handles[0]=DmQueryRecord(current_db,current_content_record);
    indices[0]=MemHandleLock(idx_handles[0]);
    if(decompress_content())return!0;
-   if(articles_number()<=inc)current_article=0;
-   else current_article=articles_number()-inc;
-  }else current_article-=inc;
+   if(articles_number()<=increment)current_article=0;
+   else current_article=articles_number()-increment;
+  }else current_article-=increment;
  }else
- {if(current_article+inc>=articles_number())
-  {MemHandleUnlock(idx_handles[0]);
+ {if(current_article+increment>=articles_number())
+  {unsigned n=articles_number();
+   MemHandleUnlock(idx_handles[0]);
    if(current_content_record+1>=first_record(1))
    {current_content_record=first_record(0);
    }else current_content_record++;
    idx_handles[0]=DmQueryRecord(current_db,current_content_record);
    indices[0]=MemHandleLock(idx_handles[0]);
-   if(decompress_content())return!0;current_article=0;
-  }else current_article+=inc;
+   if(decompress_content())return!0;
+   current_article=current_article+increment-n;
+   if(current_article>=articles_number())current_article=articles_number()-1;
+  }else current_article+=increment;
  }show_article();return 0;
 }static void
 clr_status_line(void)
@@ -636,7 +639,9 @@ static void
 draw_crosshair(int x,int y)
 {WinInvertLine(x-7,y-7,x+7,y+7);WinInvertLine(x+7,y-7,x-7,y+7);
  crosshair_x=x;crosshair_y=y;ch_shown=!ch_shown;
-}static Boolean
+}static int
+increment_value(void){return list_mode?7:1;}
+static Boolean
 main_form_handler(EventType*e)
 {switch(e->eType)
  {case frmOpenEvent:on_enter_main_form();break;
@@ -650,10 +655,12 @@ main_form_handler(EventType*e)
    if(e->screenY<y0)
    {list_mode=!list_mode;if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
     show_article();break;
-   }
-   if(!list_mode)return 0;
+   }if(!list_mode)return 0;
    if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
    if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+   {int dy=11,y=e->screenY-y0,inc;
+    inc=y/dy;if(inc){list_mode=!list_mode;show_next_article(inc);}
+   }
    break;
   case penDownEvent:
    if(e->screenY<y0+articles_height&&(e->screenY>y0))
@@ -662,8 +669,8 @@ main_form_handler(EventType*e)
    }else return 0;break;
   case keyDownEvent:
    switch(((struct _KeyDownEventType*)(&(e->data)))->chr)
-   {case vchrPageDown:show_next_article(1);break;
-    case vchrPageUp:show_next_article(-1);break;
+   {case vchrPageDown:show_next_article(increment_value());break;
+    case vchrPageUp:show_next_article(-increment_value());break;
     case vchrFind:case '\n':
     {FieldType*f=(FieldType*)
       FrmGetObjectPtr(form,FrmGetObjectIndex(form,LookupField_id));
