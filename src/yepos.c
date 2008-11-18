@@ -586,9 +586,10 @@ goto_form(int id)
 void_handler(EventType*e){return 0;}
 static int
 show_next_article(int increment)
-{if(!current_db)return!0;
+{int inc=1;if(list_mode)inc=7;
+ if(!current_db)return!0;
  if(increment<0)
- {if(!current_article)
+ {if(current_article<inc)
   {MemHandleUnlock(idx_handles[0]);
    if(current_content_record==first_record(0))
    {current_content_record=first_record(1)-1;
@@ -596,10 +597,11 @@ show_next_article(int increment)
    idx_handles[0]=DmQueryRecord(current_db,current_content_record);
    indices[0]=MemHandleLock(idx_handles[0]);
    if(decompress_content())return!0;
-   current_article=articles_number()-1;
-  }else current_article--;
+   if(articles_number()<=inc)current_article=0;
+   else current_article=articles_number()-inc;
+  }else current_article-=inc;
  }else
- {if(current_article+1>=articles_number())
+ {if(current_article+inc>=articles_number())
   {MemHandleUnlock(idx_handles[0]);
    if(current_content_record+1>=first_record(1))
    {current_content_record=first_record(0);
@@ -607,7 +609,7 @@ show_next_article(int increment)
    idx_handles[0]=DmQueryRecord(current_db,current_content_record);
    indices[0]=MemHandleLock(idx_handles[0]);
    if(decompress_content())return!0;current_article=0;
-  }else++current_article;
+  }else current_article+=inc;
  }show_article();return 0;
 }static void
 clr_status_line(void)
