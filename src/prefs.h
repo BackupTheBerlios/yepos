@@ -15,4 +15,3 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.*/
 int load_preferences(void);void save_preferences(void);
 void set_lookup(const char*l);const char*get_lookup(void);
-void set_db_name(const char*l);const char*get_db_name(void);

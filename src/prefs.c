@@ -10,10 +10,6 @@ set_lookup(const char*l)
 {if(lookup)MemPtrFree(lookup);lookup=0;
  if(!(l&&StrLen(l)))return;
  lookup=MemPtrNew(StrLen(l)+1);if(lookup)StrCopy(lookup,l);
-}void
-set_db_name(const char*s)
-{int i;for(i=0;i<db_name_size&&*s;i++)db_name[i]=*s++;
- while(i<db_name_size)db_name[i++]=0;
 }const char*
 get_lookup(void){return lookup;}
 static void
