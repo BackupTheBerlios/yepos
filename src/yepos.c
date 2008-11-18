@@ -1,18 +1,4 @@
 /*yepos the PalmOS dictionary: main() and other functions*/
-/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
-
-yepos is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.*/
 #include<PalmOS.h>
 #include"control_ids.h"
 #include"show_battery.h"
@@ -35,7 +21,7 @@ static void
 sys_task_delay(int x){if(facunde>1)SysTaskDelay(x*2);}
 static int
 parse_header(int verbous)
-{char s[0x33];char*p;unsigned*up=(unsigned*)p;int y=0,incy=11,i,j;
+{char s[0x33];char*p;unsigned*up;int y=0,incy=11,i,j;
  record0=DmQueryRecord(current_db,0);
  if(!record0)return!0;p=MemHandleLock(record0);if(!p)return!0;
  rec0_size=MemPtrSize(p);
@@ -407,7 +393,6 @@ list_databases(void)
 }int
 load_database(int index)
 {int r=!0,i;if(!databases_num)return!0;
- /*set_db_name(database_handles[0]->name);*/
  if(current_db)close_database();
  current_db=DmOpenDatabase(database_handles[index]->card,
   database_handles[index]->id,dmModeReadOnly);
@@ -438,7 +423,8 @@ mark_article_body(int x,int y,int dy)
 {WinDrawLine(x,y,x,y+dy/3);WinDrawLine(x,y+dy*2/3,x,y+dy-1);
  WinDrawLine(x+2,y,x+2,y+dy/3);WinDrawLine(x+2,y+dy*2/3,x+2,y+dy-1);
  WinDrawLine(x,y,x+2,y);WinDrawLine(x,y+dy-1,x+2,y+dy-1);
-}static void
+}static int list_mode;
+static void
 show_article(void)
 {unsigned art_num=current_article,cur_rec=current_content_record,
   article_marked=!0;
@@ -473,10 +459,12 @@ show_article(void)
   art=article_ptr(art_num++);
   WinDrawChars(art,StrLen(art),x,y);
   x+=FntCharsWidth(art,StrLen(art));art+=StrLen(art)+1;
-  WinDrawChars(art,1,x,y);x+=FntCharsWidth(art++,1);
+  if(!list_mode){WinDrawChars(art,1,x,y);x+=FntCharsWidth(art++,1);}
+  else{art++;art+=StrLen(art)+1;}
+  if(list_mode){mark_article_body(x,y,dy);x+=4;width-=4;}
   if(x<screen_width)width-=x;else
-  {if(!article_marked){separate_articles(y);article_marked=!0;}
-   y+=dy;x=0;if(y>y_max)break;
+  {if(!(article_marked||list_mode)){separate_articles(y);article_marked=!0;}
+   y+=dy;if(y>y_max)break;if(!list_mode)x=0;
   }
   do
   {n=FntWordWrap(art,width);
@@ -484,9 +472,9 @@ show_article(void)
    if(!article_marked){separate_articles(y);article_marked=!0;}
    width=screen_width;n0+=n;y+=dy;
    xb=x+FntCharsWidth(art,art[n-1]?n:n-1);x=x0;art+=n;
-  }while(*art&&y<y_max);
+  }while(*art&&y<y_max&&!list_mode);
+  if(y>y_max)break;if(list_mode)continue;
   mark_article_body(xb,y-dy,dy);art++;
-  if(y>y_max)break;
   do
   {n=FntWordWrap(art,width);
    WinDrawChars(art,art[n-1]?n:n-1,x,y);
@@ -641,14 +629,35 @@ on_enter_main_form(void)
    FldSetSelection(fl,0,FldGetTextLength(fl));
   }
  }show_article();
+}static int crosshair_x,crosshair_y,ch_shown;
+static void
+draw_crosshair(int x,int y)
+{WinInvertLine(x-7,y-7,x+7,y+7);WinInvertLine(x+7,y-7,x-7,y+7);
+ crosshair_x=x;crosshair_y=y;ch_shown=!ch_shown;
 }static Boolean
 main_form_handler(EventType*e)
 {switch(e->eType)
  {case frmOpenEvent:on_enter_main_form();break;
+  case penMoveEvent:
+   if(!list_mode)return 0;
+   if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+   if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
+   draw_crosshair(e->screenX,e->screenY);
+   break;
+  case penUpEvent:
+   if(e->screenY<y0)
+   {list_mode=!list_mode;if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+    show_article();break;
+   }
+   if(!list_mode)return 0;
+   if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
+   if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+   break;
   case penDownEvent:
-   if(e->screenY<y0+articles_height&&e->screenY>y0)
-    show_next_article(e->screenY<(screen_height-y0)/2?-1:1);
-   else return 0;break;
+   if(e->screenY<y0+articles_height&&(e->screenY>y0))
+   {if(list_mode){draw_crosshair(e->screenX,e->screenX);}
+    else show_next_article(e->screenY<(screen_height-y0)/2?-1:1);
+   }else return 0;break;
   case keyDownEvent:
    switch(((struct _KeyDownEventType*)(&(e->data)))->chr)
    {case vchrPageDown:show_next_article(1);break;
@@ -716,4 +725,17 @@ PilotMain(UInt16 cmd,void*params,UInt16 flags)
  if(init()){SysTaskDelay(50);return 0;}
  goto_form(MainForm_id);event_loop();
  close_all();return 0;
-}
+}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+
+yepos is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.*/
