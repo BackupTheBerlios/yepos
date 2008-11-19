@@ -8,6 +8,7 @@
 #include"enums.h"
 #include"globals.h"
 #include<SysZLib.h>
+#include"zlib_error_alert.h"
 enum local_constants
 {bits_per_byte=8,screen_width=160,screen_height=160,
  x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12
@@ -107,21 +108,6 @@ alloc_indices(void)
 close_database(void)
 {free_indices();unlock_handle(&record0);
  if(current_db){DmCloseDatabase(current_db);current_db=0;}
-}static unsigned
-zlib_error_alert(int error,const char*function)
-{const char*err_code;char s[0x11];
- switch(error)
- {case Z_OK:err_code="Z_OK";break;
-  case Z_STREAM_END:err_code="Z_STREAM_END";break;
-  case Z_NEED_DICT:err_code="Z_NEED_DICT";break;
-  case Z_ERRNO:err_code="Z_ERRNO";break;
-  case Z_STREAM_ERROR:err_code="Z_STREAM_ERROR";break;
-  case Z_DATA_ERROR:err_code="Z_DATA_ERROR";break;
-  case Z_MEM_ERROR:err_code="Z_MEM_ERROR";break;
-  case Z_BUF_ERROR:err_code="Z_BUF_ERROR";break;
-  case Z_VERSION_ERROR:err_code="Z_VERSION_ERROR";break;
-  default:err_code=s;StrIToA(s,error);
- }return FrmCustomAlert(ZLib_Error_Alert_id,function,err_code," ");
 }static void
 draw_chars(const char*s,int x,int y)
 {if(facunde)WinDrawChars(s,StrLen(s),x,y);}
