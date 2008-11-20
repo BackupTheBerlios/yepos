@@ -5,12 +5,13 @@ it's primary features are:
 (0) RMS-sense freedom, you can use and distribute it under
     the terms of the GNU GPLv3+
 (1) it is older devices-oriented:
-    it runs on PalmOS 2.0 (no restrictions on uncompressed databases,
-    some restrictions on maximum record size for compressed ones);
+    it runs on PalmOS 2.0 (probably slower than desired when running
+    through compressed databases with large content records);
     on PalmOS 3.0 and later without restrictions;
     Palm IIIxe shall run it quite fluently;
     generally, one of the most important goals is to to minimise
-    the power consumption
+    the power consumption;
+    it is written with badly adjusted digitizer in mind
 (2) it's host-side programs are written in C within C89 standard
     (apart from dependency on zlib), single object file per program,
     so should be very portable and easy to build
@@ -25,8 +26,7 @@ it's primary features are:
 In current alpha state some essential features are yet to be
 implemented:
 (0) proper articles output:
-   (a) multiple modes (single line per article,
-       grammatical marks on/off, font/colour selections)
+   (a) more modes (grammatical marks on/off, font/colour selections)
    (b) show full contents of long articles
 
 Some not so important features that are also planned:
