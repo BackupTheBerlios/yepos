@@ -671,16 +671,22 @@ draw_crosshair(int x,int y)
  crosshair_x=x;crosshair_y=y;ch_shown=!ch_shown;
 }static int
 increment_value(void){return list_mode?7:1;}
+static unsigned evt_loop_delay=289;
 static Boolean
 main_form_handler(EventType*e)
-{switch(e->eType)
+{static int saved_x,saved_y,saved;
+ static unsigned long t0;unsigned long t=TimGetTicks();
+ if(saved&&t-t0>17)
+ {saved=0;
+  if(list_mode)
+  {if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+   if(saved_y>y0&&saved_y<y0+articles_height)draw_crosshair(saved_x,saved_y);
+  }t0=t;evt_loop_delay=289;
+ }
+ switch(e->eType)
  {case frmOpenEvent:on_enter_main_form();break;
-  case penMoveEvent:
-   if(!list_mode)return 0;
-   if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
-   if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
-   draw_crosshair(e->screenX,e->screenY);
-   break;
+  case penMoveEvent:if(!list_mode)return 0;
+   saved_x=e->screenX,saved_y=e->screenY;saved=!0; vt_loop_delay=10;break;
   case penUpEvent:
    if(e->screenY<y0)
    {list_mode=!list_mode;if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
@@ -693,7 +699,7 @@ main_form_handler(EventType*e)
    }break;
   case penDownEvent:
    if(e->screenY<y0+articles_height&&(e->screenY>y0))
-   {if(list_mode){draw_crosshair(e->screenX,e->screenX);}
+   {if(list_mode)draw_crosshair(e->screenX,e->screenX);
     else show_next_article(e->screenY<(screen_height-y0)/2?-1:1);
    }else return 0;break;
   case keyDownEvent:
@@ -739,7 +745,7 @@ app_handle_event(EventType*e)
 }static void
 event_loop(void)
 {while(1)
- {EventType e;EvtGetEvent(&e,289);
+ {EventType e;EvtGetEvent(&e,evt_loop_delay);
   if(e.eType!=keyDownEvent||
    vchrFind!=((struct _KeyDownEventType*)(&(e.data)))->chr)
   if(SysHandleEvent(&e))continue;if(e.eType==appStopEvent)break;
