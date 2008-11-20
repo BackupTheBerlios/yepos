@@ -10,7 +10,7 @@ bin=bin
 o=o
 Macul=${o}/macul
 PRC=$(foreach lang, $(Lang), bin/$(TARGET)_$(lang).prc)
-all: ${Macul}/dirs.stamp ${PRC}
+all: ${Macul}/dirs.stamp ${PRC} bin/mem_ory.test.prc
 .PHONY: all clean
 .SECONDARY:$(foreach lang,$(Lang),$(Macul)/$(lang)/$(TARGET).rcp\
  $(Macul)/$(lang)/bin.stamp)
@@ -24,14 +24,19 @@ $(Macul)/dirs.stamp:
 	touch $@
 ${bin}/${TARGET}_%.prc: o/${TARGET} ${TARGET}.def ${Macul}/%/bin.stamp
 	build-prc -o $@ ${TARGET}.def $< ${Macul}/$*/*.bin
+${bin}/mem_ory.test.prc: o/mem_ory.test mem_ory.test.def
+	build-prc -o $@ mem_ory.test.def $<
 ${Macul}/%/bin.stamp:${Macul}/%/${TARGET}.rcp control_ids.h ${Macul}/dirs.stamp
 	pilrc -q -L $* $< ${Macul}/$*
 	touch $@
 ${o}/${TARGET}: ${o}/yepos.o ${o}/show_battery.o ${o}/prefs.o ${o}/settings.o\
- ${o}/zlib_error_alert.o
+ ${o}/zlib_error_alert.o ${o}/mem_ory.o
+	${LD} ${LDFLAGS} -o $@ $^
+${o}/mem_ory.test: ${o}/mem_ory.test.o ${o}/mem_ory.o
 	${LD} ${LDFLAGS} -o $@ $^
 ${o}/${TARGET}.o: yepos.c control_ids.h show_battery.h globals.h\
- prefs.h ../include/signs.h enums.h settings.h zlib_error_alert.h
+ prefs.h ../include/signs.h enums.h settings.h zlib_error_alert.h\
+ mem_ory.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/show_battery.o: show_battery.c show_battery.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
@@ -39,6 +44,13 @@ ${o}/prefs.o: prefs.c prefs.h globals.h ../include/signs.h enums.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/settings.o: settings.c settings.h control_ids.h globals.h enums.h\
  ../include/signs.h prefs.h show_battery.h
+	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
+${o}/dictionary.o: dictionary.c dictionary.h mem_ory.h control_ids.h\
+ ../include/signs.h
+	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
+${o}/mem_ory.o: mem_ory.c mem_ory.h ../include/signs.h
+	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
+${o}/mem_ory.test.o: mem_ory.test.c mem_ory.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/zlib_error_alert.o: zlib_error_alert.c zlib_error_alert.h control_ids.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
