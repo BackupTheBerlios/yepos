@@ -1,16 +1,27 @@
 #yepos: a PalmOS dictionary
-#Makefile for PalmOS program
+#Makefile for PalmOS programs
 CC = m68k-palmos-gcc
 LD = m68k-palmos-gcc
 CPPFLAGS = -I../extern -I. -DNEWGCC
 CFLAGS = -Wall -O2
-Lang=lat ru en
+#whether to build executables for all languages (not only Latin)
+BUILD_LANGS=0
+#whether to build test prcs
+BUILD_TESTS=0
+Lang=lat
+ifneq (${BUILD_LANGS},0)
+Lang+=ru en
+endif
 TARGET=yepos
 bin=bin
 o=o
 Macul=${o}/macul
-PRC=$(foreach lang, $(Lang), bin/$(TARGET)_$(lang).prc)
-all: ${Macul}/dirs.stamp ${PRC} bin/mem_ory.test.prc
+PRC=$(foreach lang, $(Lang), ${bin}/$(TARGET)_$(lang).prc)
+test_prc=${bin}/mem_ory.test.prc
+ifneq (${BUILD_TESTS},0)
+ PRC+=${test_prc}
+endif
+all: ${Macul}/dirs.stamp ${PRC}
 .PHONY: all clean
 .SECONDARY:$(foreach lang,$(Lang),$(Macul)/$(lang)/$(TARGET).rcp\
  $(Macul)/$(lang)/bin.stamp)
@@ -22,9 +33,9 @@ DIRS =${bin} ${o} $(Macul) $(foreach lang, $(Lang), $(Macul)/$(lang))
 $(Macul)/dirs.stamp:
 	mkdir $(DIRS)
 	touch $@
-${bin}/${TARGET}_%.prc: o/${TARGET} ${TARGET}.def ${Macul}/%/bin.stamp
+${bin}/${TARGET}_%.prc: ${o}/${TARGET} ${TARGET}.def ${Macul}/%/bin.stamp
 	build-prc -o $@ ${TARGET}.def $< ${Macul}/$*/*.bin
-${bin}/mem_ory.test.prc: o/mem_ory.test mem_ory.test.def
+${bin}/mem_ory.test.prc: ${o}/mem_ory.test mem_ory.test.def
 	build-prc -o $@ mem_ory.test.def $<
 ${Macul}/%/bin.stamp:${Macul}/%/${TARGET}.rcp control_ids.h ${Macul}/dirs.stamp
 	pilrc -q -L $* $< ${Macul}/$*
