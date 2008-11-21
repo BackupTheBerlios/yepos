@@ -457,6 +457,23 @@ void
 set_list_mode(int x){list_mode=x;}
 int
 get_list_mode(void){return list_mode;}
+static int
+delimiter(int c)
+{if(c>='a'&&c<='z')return 0;if(c>='A'&&c<='Z')return 0;
+ if(c>='0'&&c<='9')return 0;if(c<'0')return!0;if(c>'9'&&c<'A')return!0;
+ if(c>'Z'&&c<'a')return!0;if(c>'z'&&c<0x80)return!0;return 0;
+}static int
+chars_in_width(const char*s,int width,int*wd,int*f)
+{Int16 w=width,l=StrLen(s);Boolean fit;
+ FntCharsInWidth(s,&w,&l,&fit);if(wd)*wd=w;if(f)*f=fit;return l;
+}static int
+font_word_wrap(const char*s,int limit,int*wd)
+{int f,n=chars_in_width(s,limit,wd,&f);const char*p;
+ if(f||!n)return n;
+ for(p=s+n-1;!delimiter(*p)&&p!=s;p--);
+ if(p==s)return n;n=p-s+1;
+ if(wd)*wd=FntCharsWidth(s,s[n-1]?n:n-1);return n;
+}
 static void
 show_article(void)
 {unsigned art_num=current_article,cur_rec=current_content_record,
@@ -495,7 +512,8 @@ show_article(void)
    y+=dy;if(y>y_max)break;if(!list_mode)x=0;
   }
   do
-  {n=FntWordWrap(art,width);
+  {int wd;
+   n=list_mode?chars_in_width(art,width,&wd,0):font_word_wrap(art,width,&wd);
    WinDrawChars(art,art[n-1]?n:n-1,x,y);
    if(!article_marked){separate_articles(y);article_marked=!0;}
    width=screen_width;n0+=n;y+=dy;
@@ -504,7 +522,7 @@ show_article(void)
   if(y>y_max)break;if(list_mode)continue;
   mark_article_body(xb,y-dy,dy);art++;
   do
-  {n=FntWordWrap(art,width);
+  {n=font_word_wrap(art,width,0);
    WinDrawChars(art,art[n-1]?n:n-1,x,y);
    y+=dy;n0+=n;x=x0;art+=n;
   }while(*art&&y<y_max);article_marked=0;
