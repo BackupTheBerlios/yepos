@@ -13,26 +13,18 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.*/
-#ifdef COUNT_MEMORY
-void*mem_new(unsigned long size);void mem_free(void*);
-unsigned long mem_unfreed(void);unsigned long mem_max_used(void);
-MemPtr handle_lock(MemHandle h);Err handle_unlock(MemHandle h);
-long handles_lock_count(void);long handles_max_lock_count(void);
-#else
-#define mem_new MemPtrNew
-#define mem_free MemPtrFree
-#define mem_max_used() (0ul)
-#define mem_unfreed() (0ul)
-#define handle_lock(h) MemHandleLock(h)
-#define handle_unlock(h) MemHandleUnlock(h)
-#define handles_lock_count() (0l)
-#define handles_max_lock_count() (0l)
-#endif
+enum invalid_mem_chunk_descriptors
+{invalid_chunk_descriptor=-1,no_chunk_db=-2,
+ all_descriptors_busy=-3,chunk_resize_failed=-4,
+ handle_lock_failed=-5
+};
 typedef void*locked_pointer;
 typedef int mem_chunk_descriptor;
 struct mem_chunk{mem_chunk_descriptor d;locked_pointer p;};
 struct mem_chunk alloc_chunk(unsigned size);
-#define write_chunk(chunk,offset,src,size) DmWrite(chunk.p,offset,src,size)
+static inline int
+write_chunk(struct mem_chunk m,unsigned offset,const void*src,unsigned size)
+{return DmWrite(m.p,offset,src,size);}
 const char*lock_chunk(struct mem_chunk);
 void free_chunk(struct mem_chunk);
 static inline void

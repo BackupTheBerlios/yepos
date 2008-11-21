@@ -2,33 +2,6 @@
 #include<PalmOS.h>
 #include"mem_ory.h"
 #include"../include/signs.h"
-#ifdef COUNT_MEMORY
-static unsigned long max_used,used;
-static long num_locked,max_locked;
-void*
-mem_new(unsigned long size)
-{MemPtr p=MemPtrNew(size);
- if(p){used+=size;if(used>max_used)max_used=used;}
- return p;
-}void
-mem_free(void*p)
-{unsigned long size=MemPtrSize(p);
- MemPtrFree(p);used-=size;
-}unsigned long
-mem_max_used(void){return max_used;}
-unsigned long
-mem_unfreed(void){return used;}
-MemPtr
-handle_lock(MemHandle h)
-{num_locked++;if(num_locked>max_locked)max_locked=num_locked;
- return MemHandleLock(h);
-}Err
-handle_unlock(MemHandle h){num_locked--;return MemHandleUnlock(h);}
-long
-handles_lock_count(void){return num_locked;}
-long
-handles_max_lock_count(void){return max_locked;}
-#endif
 #define mem_db_type ('Cach')
 enum local_enums{mem_handles_num=0x11,min_chunk_size=4};
 enum debug_constants{facunde=1};
@@ -65,21 +38,20 @@ void
 close_memory()
 {int i;
  for(i=0;i<mem_handles_num;i++)if(busy_handles[i])
-  draw_chars("unfreed handle");
- if(!db)return;shrink_records();DmCloseDatabase(db);
+ {struct mem_chunk m;draw_chars("unfreed handle");m.d=i;free_chunk(m);}
+ if(!db)return;DmCloseDatabase(db);
 }struct mem_chunk
 alloc_chunk(unsigned size)
-{struct mem_chunk m;int i;m.d=-1;
+{struct mem_chunk m;int i;m.d=invalid_chunk_descriptor;
  for(i=0;i<mem_handles_num&&busy_handles[i];i++);
- if(!db){draw_chars("no db");return m;}
- if(i==mem_handles_num){draw_chars("all busy");return m;}
+ if(!db){draw_chars("no db");m.d=no_chunk_db;return m;}
+ if(i==mem_handles_num)
+ {draw_chars("all busy");m.d=all_descriptors_busy;return m;}
  if(!(busy_handles[i]=DmResizeRecord(db,i,size)))
- {draw_chars("can't resize  ");return m;}
- m.d=i;m.p=MemHandleLock(busy_handles[i]);return m; 
+ {draw_chars("can't resize  ");m.d=chunk_resize_failed;return m;}
+ m.d=i;m.p=MemHandleLock(busy_handles[i]);if(!m.p)m.d=handle_lock_failed;
+ return m;
 }
-/*int
-write_chunk(struct mem_chunk m,unsigned offset,const void*src,unsigned size)
-{return DmWrite(m.p,offset,src,size);}*/
 const char*
 lock_chunk(struct mem_chunk m)
 {MemHandleUnlock(busy_handles[m.d]);DmReleaseRecord(db,m.d,0);
@@ -88,8 +60,9 @@ lock_chunk(struct mem_chunk m)
 }void
 free_chunk(struct mem_chunk p)
 {mem_chunk_descriptor d=p.d;
- if(d>=mem_handles_num||d<0)return;MemHandleUnlock(busy_handles[d]);
- busy_handles[d]=0;DmResizeRecord(db,d,min_chunk_size);
+ if(d>=mem_handles_num||d<0)return;
+ if(busy_handles[d]){MemHandleUnlock(busy_handles[d]);busy_handles[d]=0;}
+ DmResizeRecord(db,d,min_chunk_size);
 }/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
 
 This program is free software; you can redistribute it and/or modify
