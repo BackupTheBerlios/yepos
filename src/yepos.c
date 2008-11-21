@@ -136,16 +136,16 @@ close_database(void)
 }static int
 decompress_content(void)
 {unsigned cont_size,decompressed;const char*cont;z_stream str;int err;
- unsigned orig_size;draw_chars("decomp       ",0,0);
+ unsigned orig_size;
  if(!(*features&compression_bit)){uncompressed=indices[0];return 0;}
  uncompressed=0;free_chunk(uncompressed_chunk);
  uncompressed_chunk=alloc_chunk(*record_size);
+ if(facunde)
  {char s[0x33];StrCopy(s,"alloc ");StrIToA(s+StrLen(s),*record_size);
   StrCat(s,":");StrIToA(s+StrLen(s),zlib_buf_size);StrCat(s,"   ");
   draw_chars(s,0,0);
  }
  if(uncompressed_chunk.d<0)return!0;
- draw_chars("uncompressed_chunk ",0,0);
  MemSet(&str,sizeof str,0);decompressed=0;
  orig_size=*((const unsigned*)*indices);cont=indices[0]+sizeof(orig_size);
  cont_size=MemPtrSize(indices[0])-2;
@@ -476,7 +476,6 @@ show_article(void)
    if(!uncomp)
    {uncomp=uncompressed;if(compression_bit&*features)save_uncompressed();}
    else MemHandleUnlock(*idx_handles);
-   *idx_handles=0;
    *idx_handles=DmQueryRecord(current_db,cur_rec);
    *indices=MemHandleLock(*idx_handles);
    if(decompress_content())break;/*TODO cache previous-next records*/
@@ -597,13 +596,13 @@ init_statum(void)
  return 0;
 }static int
 init(void)
-{if(setup_zlib())ZLibRef=0;if(ZLibRef)zlib_buf=alloc_zlib_buf();
- if(!zlib_buf)goto close_zlib;
- if(!list_databases())goto free_zlib_buf;
- if(init_memory())goto free_zlib_buf;
- init_show_battery();if(!init_statum())return 0;
- close_memory();
- free_zlib_buf:if(zlib_buf)MemPtrFree(zlib_buf);
+{if(setup_zlib())ZLibRef=0;
+ if(!list_databases())goto close_zlib;
+ if(ZLibRef)if(!init_memory())goto close_zlib;
+ init_show_battery();
+ if(ZLibRef){zlib_buf=alloc_zlib_buf();if(!zlib_buf)goto close_mem;}
+ if(!init_statum())return 0;
+ close_mem:close_memory();
  close_zlib:if(ZLibRef){ZLTeardown;}return!0;
 }static int current_form;FormType*form;
 FormType*
@@ -686,7 +685,7 @@ main_form_handler(EventType*e)
  switch(e->eType)
  {case frmOpenEvent:on_enter_main_form();break;
   case penMoveEvent:if(!list_mode)return 0;
-   saved_x=e->screenX,saved_y=e->screenY;saved=!0; vt_loop_delay=10;break;
+   saved_x=e->screenX,saved_y=e->screenY;saved=!0;evt_loop_delay=10;break;
   case penUpEvent:
    if(e->screenY<y0)
    {list_mode=!list_mode;if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
