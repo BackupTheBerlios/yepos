@@ -20,7 +20,8 @@ try_db_name(void)
  for(i=0;i<n;i++)if(!StrCompare(db[i]->name,db_name))
  {load_database(i);return;}
  *db_name=0;
-}int
+}enum aux_flags_bits{list_mode_bit=0};
+int
 load_preferences(void)
 {UInt16 prefs_size=0;int version,n;char*p,*_;set_defaults();
  version=PrefGetAppPreferences(CREATOR,prefs_id,0,&prefs_size,0);
@@ -33,22 +34,27 @@ load_preferences(void)
  if(*db_name)try_db_name();
  if(prefs_size>1)
  {n=StrLen(_)+1;lookup=MemPtrNew(n);
-  if(lookup)MemMove(lookup,_,n);prefs_size-=n;
+  if(lookup)MemMove(lookup,_,n);prefs_size-=n;_+=n;
+ }if(prefs_size>0)
+ {char aux_flags=*_;int x;
+  x=2*!!(aux_flags&(1<<list_mode_bit));set_list_mode(x);
+  prefs_size-=1;_+=1;
  }MemPtrFree(p);return 0;
 }static int
 prefs_size(void)
 {int size=db_name_size;const char*l=get_lookup();
- if(l)size+=StrLen(l);size+=1;return size;
+ if(l)size+=StrLen(l);size+=1;size+=1;return size;
 }void
 save_preferences(void)
 {int size=prefs_size(),n;char*p=MemPtrNew(size),*_=p;const char*l;
- const char*dbn;struct database_handle**dbl;
+ const char*dbn;struct database_handle**dbl;char aux_flags;
  if(!p){if(lookup)MemPtrFree(lookup);lookup=0;return;}
  l=get_lookup();dbl=get_database_list(&n);dbn=db_name;
  if(dbl)dbn=dbl[get_current_db_idx()]->name;
  MemMove(_,dbn,db_name_size);_+=db_name_size;
  if(l){StrCopy(_,l);_+=StrLen(l);if(lookup)MemPtrFree(lookup);lookup=0;}
- *_++=0;
+ *_++=0;aux_flags=0;if(get_list_mode())aux_flags|=1<<list_mode_bit;
+ *_=aux_flags;
  PrefSetAppPreferences(CREATOR,prefs_id,prefs_version,p,size,0);
  MemPtrFree(p);
 }/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93

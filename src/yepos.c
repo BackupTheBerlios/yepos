@@ -14,7 +14,7 @@ enum local_constants
 {bits_per_byte=8,screen_width=160,screen_height=160,
  x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12
 };
-enum local_defines{facunde=2,zlib_irrobust=1};
+enum local_defines{facunde=0,zlib_irrobust=1};
 static unsigned*features,*record_size,*ary,*volumes,
  *vol,*ary_records,rec0_size,comment_size;
 static char*db_comment;
@@ -453,6 +453,10 @@ mark_article_body(int x,int y,int dy)
  WinDrawLine(x+2,y,x+2,y+dy/3);WinDrawLine(x+2,y+dy*2/3,x+2,y+dy-1);
  WinDrawLine(x,y,x+2,y);WinDrawLine(x,y+dy-1,x+2,y+dy-1);
 }static int list_mode;
+void
+set_list_mode(int x){list_mode=x;}
+int
+get_list_mode(void){return list_mode;}
 static void
 show_article(void)
 {unsigned art_num=current_article,cur_rec=current_content_record,
@@ -598,7 +602,7 @@ init_statum(void)
 init(void)
 {if(setup_zlib())ZLibRef=0;
  if(!list_databases())goto close_zlib;
- if(ZLibRef)if(!init_memory())goto close_zlib;
+ if(ZLibRef)if(init_memory())goto close_zlib;
  init_show_battery();
  if(ZLibRef){zlib_buf=alloc_zlib_buf();if(!zlib_buf)goto close_mem;}
  if(!init_statum())return 0;
@@ -688,13 +692,14 @@ main_form_handler(EventType*e)
    saved_x=e->screenX,saved_y=e->screenY;saved=!0;evt_loop_delay=10;break;
   case penUpEvent:
    if(e->screenY<y0)
-   {list_mode=!list_mode;if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
+   {if(!list_mode)list_mode=1;else list_mode--;
+    if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
     show_article();break;
    }if(!list_mode)return 0;
    if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
    if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
    {int dy=11,y=e->screenY-y0,inc;
-    inc=y/dy;list_mode=!list_mode;show_next_article(inc);
+    inc=y/dy;list_mode--;show_next_article(inc);
    }break;
   case penDownEvent:
    if(e->screenY<y0+articles_height&&(e->screenY>y0))

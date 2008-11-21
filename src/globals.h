@@ -19,3 +19,4 @@ struct database_handle
 {char name[db_name_size+1];UInt16 card;LocalID id;};
 struct database_handle**get_database_list(int*items_number);
 int get_current_db_idx(void);int load_database(int index);
+void set_list_mode(int x);int get_list_mode(void);
