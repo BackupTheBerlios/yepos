@@ -25,9 +25,11 @@ draw_chars(const char*s,int x,int y)
 static unsigned long global_ticks;
 static unsigned*features,*record_size,*ary,*volumes,
  *vol,*ary_records,rec0_size,comment_size;
-static char*db_comment;
+static const char*db_comment;
 static DmOpenRef current_db;static MemHandle record0;
 static unsigned zlib_buf_size;static char*zlib_buf;
+const char*
+get_db_comment(int*size){if(size)*size=comment_size;return db_comment;}
 static int
 parse_header(int verbous)
 {char s[0x33];char*p;unsigned*up;int y=0,incy=11,i,j;
@@ -41,7 +43,7 @@ parse_header(int verbous)
  {FrmAlert(No_Zlib_Alert_id);return!0;}
  record_size=up+1;ary=up+2;
  volumes=up+3;vol=up+4;ary_records=up+5;
- db_comment=(char*)(ary_records+*ary+1);
+ db_comment=(const char*)(ary_records+*ary+1);
  comment_size=rec0_size-(db_comment-p);
  if(!verbous)return 0;
  StrCopy(s,"Database ");j=StrLen(s);
@@ -79,7 +81,7 @@ static int
 init_cache(void)
 {int i;struct cache_item*p;
  for(i=0,p=cache;i<cache_length;i++,p++)
- {p->chunk.d=invalid_chunk_descriptor;p->content=0;p->db_idx=0;p->rec_num=0;}
+ {p->chunk.d=invalid_chunk_descriptor;p->content=0;p->db_idx=-1;p->rec_num=0;}
  return 0;
 }static void
 close_cache(void)
@@ -439,7 +441,8 @@ exit:MemPtrFree(t);
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-2,status_line_y);
  }return ret;
-}int databases_num,db_idx;struct database_handle**database_handles;
+}static int databases_num,db_idx;
+struct database_handle**database_handles;
 int
 get_current_db_idx(void){return db_idx;}
 struct database_handle**
@@ -744,10 +747,11 @@ clr_status_line(void)
  WinEraseRectangle(&r,0);
 }static void
 on_enter_main_form(void)
-{const char*s0=StrChr(db_comment,'\n')+1;int field_idx;
+{const char*s0=StrChr(db_comment,'\n')+1;int field_idx;static int vex;
  FrmDrawForm(form);show_battery(!0);clr_status_line();
+ if(!vex)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-global_ticks);sl=StrLen(s);
-  WinDrawChars(s,sl,screen_width-sl*5-60,status_line_y);
+  WinDrawChars(s,sl,screen_width-sl*5-60,status_line_y);vex=!0;
  }
  if(s0)
  {const char*s1=StrChr(s0,'\n');

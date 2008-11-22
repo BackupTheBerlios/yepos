@@ -33,7 +33,15 @@ show_buttons(FormType*f)
  }
 }static void
 show_selected_database(FormType*f)
-{
+{int n,i,y,comment_size,incy=12;
+ const char*comment=get_db_comment(&comment_size);
+ get_database_list(&n);if(n>5)n=5;y=12+n*14;
+ for(i=0;0<comment_size;i++)
+ {if(comment[i]=='\n'||i==comment_size)
+  {WinDrawChars(comment,i,0,y);y+=incy;
+   comment+=i+1;comment_size-=i+1;i=-1;
+  }if(y>130)break;
+ }
 }static void
 on_enter(void)
 {FormType*f;unsigned long tic=TimGetTicks();
