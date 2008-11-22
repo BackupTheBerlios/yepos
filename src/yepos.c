@@ -12,15 +12,21 @@
 #include"mem_ory.h"
 enum local_constants
 {bits_per_byte=8,screen_width=160,screen_height=160,
- x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12
+ x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12,
+ log2_cache_length=4,cache_length=1<<log2_cache_length,
+ cache_length_mask=cache_length-1
 };
 enum local_defines{facunde=0,zlib_irrobust=1};
+static void
+draw_chars(const char*s,int x,int y)
+{if(facunde)WinDrawChars(s,StrLen(s),x,y);
+ if(facunde>1)SysTaskDelay(50);
+}
 static unsigned*features,*record_size,*ary,*volumes,
  *vol,*ary_records,rec0_size,comment_size;
 static char*db_comment;
 static DmOpenRef current_db;static MemHandle record0;
-static unsigned zlib_buf_size;
-static char*zlib_buf;
+static unsigned zlib_buf_size;static char*zlib_buf;
 static int
 parse_header(int verbous)
 {char s[0x33];char*p;unsigned*up;int y=0,incy=11,i,j;
@@ -63,6 +69,104 @@ parse_header(int verbous)
 struct mem_chunk uncompressed_chunk;
 static const char*uncompressed;char**indices;
 static unsigned current_article,current_content_record=1;
+struct cache_item
+{int db_idx;unsigned rec_num;struct mem_chunk chunk;
+ const char*content;
+};
+static struct cache_item cache[cache_length];static int cache_head;
+static int
+init_cache(void)
+{int i;struct cache_item*p;
+ for(i=0,p=cache;i<cache_length;i++,p++)
+ {p->chunk.d=invalid_chunk_descriptor;p->content=0;p->db_idx=0;p->rec_num=0;}
+ return 0;
+}static void
+close_cache(void)
+{int i;struct cache_item*p;
+ for(i=0,p=cache;i<cache_length;i++,p++)
+  if(p->chunk.d>=0)free_chunk(p->chunk);
+}static int
+inflate_into_chunk(struct mem_chunk m)
+{unsigned cont_size,decompressed;const char*cont;z_stream str;int err;
+  unsigned orig_size;MemSet(&str,sizeof str,0);decompressed=0;
+  orig_size=*((const unsigned*)*indices);cont=*indices+sizeof(orig_size);
+  cont_size=MemPtrSize(*indices)-2;decompressed=0;
+  str.next_in=(char*)cont;str.avail_in=cont_size;
+  err=inflateInit(&str);
+  if(err){zlib_error_alert(err,"inflateInit");goto exit;}
+  while(decompressed<orig_size)
+  {unsigned n;str.next_out=zlib_buf;str.avail_out=zlib_buf_size;
+   err=inflate(&str,0);
+   if(err&&err!=Z_STREAM_END){zlib_error_alert(err,"inflate");goto exit;}
+   n=zlib_buf_size-str.avail_out;
+   write_chunk(m,decompressed,zlib_buf,n);decompressed+=n;
+  }while(err!=Z_STREAM_END);
+  err=inflateEnd(&str);
+  if(err)zlib_error_alert(err,"inflateEnd");
+ exit:
+  uncompressed=lock_chunk(m);return err;
+}static int
+find_cache_item(unsigned rec_num)
+{int i=cache_head,d=get_current_db_idx(),idle_item=(cache_head+1)&cache_length_mask;
+ if(facunde)
+ {char s[0x33];StrCopy(s,"cache find ");StrCat(s,"(");
+   StrIToA(s+StrLen(s),d);StrCat(s,":");
+   StrIToA(s+StrLen(s),rec_num);StrCat(s,")");
+   draw_chars(s,0,0);
+ }
+ do
+ {
+  if(facunde)
+  {char s[0x33];StrCopy(s,"cache ");StrIToA(s+StrLen(s),i);StrCat(s,":(");
+   StrIToA(s+StrLen(s),cache[i].db_idx);StrCat(s,":");
+   StrIToA(s+StrLen(s),cache[i].rec_num);StrCat(s,");");
+   StrIToA(s+StrLen(s),cache[i].chunk.d);StrCat(s,"  ");
+   draw_chars(s,0,0);
+  }
+  if(cache[i].chunk.d<0){idle_item=i;goto next_i;}
+  if(d==cache[i].db_idx&&rec_num==cache[i].rec_num)
+  {uncompressed=cache[i].content;return i;}
+  next_i:i=(i-1)&cache_length_mask;
+ }while(i!=cache_head);
+ if(facunde)
+ {char s[0x33];StrCopy(s,"cache loop done ");StrIToA(s+StrLen(s),idle_item);StrCat(s,":(");
+   StrIToA(s+StrLen(s),cache[idle_item].db_idx);StrCat(s,":");
+   StrIToA(s+StrLen(s),cache[idle_item].rec_num);StrCat(s,");");
+   StrIToA(s+StrLen(s),cache[idle_item].chunk.d);StrCat(s,"  ");
+   draw_chars(s,0,0);
+ }
+ if(cache[idle_item].chunk.d>=0)free_chunk(cache[idle_item].chunk);
+ cache[idle_item].chunk.d=invalid_chunk_descriptor;
+ i=(idle_item+1)&cache_length_mask;
+ while(i!=idle_item)
+ {cache[idle_item].chunk=alloc_chunk(*record_size);
+  if(cache[idle_item].chunk.d>=0){cache_head=idle_item;break;}
+  while(i!=idle_item)
+  {int i_prev=i;i=(i+1)&cache_length_mask;
+   if(cache[i_prev].chunk.d>=0)
+   {free_chunk(cache[i_prev].chunk);
+    cache[i_prev].chunk.d=invalid_chunk_descriptor;break;
+   }
+  }
+ }
+ if(facunde)
+ {char s[0x33];StrCopy(s,"idle alloc ");StrIToA(s+StrLen(s),idle_item);StrCat(s,":(");
+   StrIToA(s+StrLen(s),d);StrCat(s,":");
+   StrIToA(s+StrLen(s),rec_num);StrCat(s,");");
+   StrIToA(s+StrLen(s),cache[idle_item].chunk.d);StrCat(s,"  ");
+   draw_chars(s,0,0);
+ }
+ if(cache[idle_item].chunk.d>=0)
+ {if(inflate_into_chunk(cache[idle_item].chunk))
+  {free_chunk(cache[idle_item].chunk);
+   cache[idle_item].chunk.d=invalid_chunk_descriptor;
+  }else
+  {cache[idle_item].rec_num=rec_num;cache[idle_item].db_idx=d;
+   cache[idle_item].content=uncompressed;
+   return idle_item;
+  }
+ }return-1;
+}
 static unsigned
 idx_items_num(int arity){return*((unsigned*)(indices[arity])+1);}
 static const unsigned*
@@ -91,37 +195,10 @@ free_indices(void)
  {free_chunk(uncompressed_chunk);
   uncompressed_chunk.d=-1;uncompressed=0;
  }current_article=0;current_content_record=1;
-}static void
-draw_chars(const char*s,int x,int y)
-{if(facunde)WinDrawChars(s,StrLen(s),x,y);
- if(facunde>1)SysTaskDelay(50);
-}
-static char*
-alloc_zlib_buf(void)
-{int i=10;char*p,*zp0,*zp1;unsigned zp0_size=1<<15,zp1_size=(1<<13)+(1<<12);
- zlib_buf_size=1<<i;uncompressed_chunk.d=-1;
- while(1)
- {p=MemPtrNew(zlib_buf_size);zp0=MemPtrNew(zp0_size);
-  zp1=MemPtrNew(zp1_size);
-  {char s[0x33];StrCopy(s,"alloc ");StrIToA(s,zlib_buf_size);StrCat(s,"   ");draw_chars(s,0,0);}
-  if(!(p&&zp0&&zp1))
-  {zlib_buf_size>>=3;
-   if(p)MemPtrFree(p);if(zp0)MemPtrFree(zp0);break;if(zp1)MemPtrFree(zp1);break;
-  }
-  if(i==15)
-  {char*_=MemPtrNew(zlib_buf_size);
-   draw_chars("i==15",0,0);
-   if(_){zlib_buf_size>>=2;MemPtrFree(_);}
-   else zlib_buf_size>>=3;MemPtrFree(p);MemPtrFree(zp0);MemPtrFree(zp1);break;
-  }MemPtrFree(p);MemPtrFree(zp0);MemPtrFree(zp1);
-  i++;zlib_buf_size<<=1;
- }if(zlib_irrobust)zlib_buf_size<<=1;p=MemPtrNew(zlib_buf_size);
- if(!p)FrmAlert(Memory_Short_Alert_id);
- draw_chars("alloc exit  ",0,0);
- return p;
+ close_cache();
 }static int
 alloc_indices(void)
-{int vex=0;
+{int vex=0;uncompressed_chunk.d=-1;
  indices=MemPtrNew(sizeof(*indices)*(*ary+1));
  vex|=!indices;
  idx_handles=MemPtrNew(sizeof(*idx_handles)*(*ary+1));
@@ -129,41 +206,37 @@ alloc_indices(void)
  if(!vex)current_content_record=first_record(0);
  if(vex)FrmAlert(Memory_Short_Alert_id);
  return vex;
+}static char*
+alloc_zlib_buf(void)
+{int i=10;char*p,*zp0,*zp1;unsigned zp0_size=1<<15,zp1_size=(1<<13)+(1<<12);
+ zlib_buf_size=1<<i;
+ while(1)
+ {p=MemPtrNew(zlib_buf_size);zp0=MemPtrNew(zp0_size);
+  zp1=MemPtrNew(zp1_size);
+  if(!(p&&zp0&&zp1))
+  {zlib_buf_size>>=3;
+   if(p)MemPtrFree(p);if(zp0)MemPtrFree(zp0);break;if(zp1)MemPtrFree(zp1);break;
+  }
+  if(i==15)
+  {char*_=MemPtrNew(zlib_buf_size);
+   if(_){zlib_buf_size>>=2;MemPtrFree(_);}
+   else zlib_buf_size>>=3;MemPtrFree(p);MemPtrFree(zp0);MemPtrFree(zp1);break;
+  }MemPtrFree(p);MemPtrFree(zp0);MemPtrFree(zp1);
+  i++;zlib_buf_size<<=1;
+ }if(zlib_irrobust)zlib_buf_size<<=1;p=MemPtrNew(zlib_buf_size);
+ if(!p)FrmAlert(Memory_Short_Alert_id);
+ return p;
 }static void
 close_database(void)
 {free_indices();unlock_handle(&record0);
  if(current_db){DmCloseDatabase(current_db);current_db=0;}
-}static int
-decompress_content(void)
-{unsigned cont_size,decompressed;const char*cont;z_stream str;int err;
- unsigned orig_size;
+}
+static int
+decompress_content(unsigned rec_num)
+{int cache_idx;
  if(!(*features&compression_bit)){uncompressed=indices[0];return 0;}
- uncompressed=0;free_chunk(uncompressed_chunk);
- uncompressed_chunk=alloc_chunk(*record_size);
- if(facunde)
- {char s[0x33];StrCopy(s,"alloc ");StrIToA(s+StrLen(s),*record_size);
-  StrCat(s,":");StrIToA(s+StrLen(s),zlib_buf_size);StrCat(s,"   ");
-  draw_chars(s,0,0);
- }
- if(uncompressed_chunk.d<0)return!0;
- MemSet(&str,sizeof str,0);decompressed=0;
- orig_size=*((const unsigned*)*indices);cont=indices[0]+sizeof(orig_size);
- cont_size=MemPtrSize(indices[0])-2;
- decompressed=0;
- str.next_in=(char*)cont;str.avail_in=cont_size;
- err=inflateInit(&str);
- if(err){zlib_error_alert(err,"inflateInit");goto exit;}
- while(decompressed<orig_size)
- {unsigned n;str.next_out=zlib_buf;str.avail_out=zlib_buf_size;
-  err=inflate(&str,0);
-  if(err&&err!=Z_STREAM_END){zlib_error_alert(err,"inflate");goto exit;}
-  n=zlib_buf_size-str.avail_out;
-  write_chunk(uncompressed_chunk,decompressed,zlib_buf,n);decompressed+=n;
- }while(err!=Z_STREAM_END);
- err=inflateEnd(&str);
- if(err)zlib_error_alert(err,"inflateEnd");
-exit:
- uncompressed=lock_chunk(uncompressed_chunk);return err;
+ uncompressed=0;cache_idx=find_cache_item(rec_num);
+ if(cache_idx<0)return!0;return 0;
 }static void
 to_lower(char*dest,const char*src){StrToLower(dest,src);}
 static int
@@ -188,7 +261,7 @@ bisect(const char*title,int title_len,int arity,
  }
  if(cmp<0){*lower=*upper=minus;return less_than_minus;}
  cmp=compare_item(title,indices[arity]+items[plus*3+2],title_len);
- draw_chars(indices[arity]+items[plus*3+2],80,40);
+ if(0)draw_chars(indices[arity]+items[plus*3+2],80,40);
  if(cmp>0){*lower=*upper=plus;return more_than_plus;}
  maxime=mixime=plus;cmpp=-1;
  do
@@ -229,11 +302,8 @@ bisect_article(const char*title,int title_len,
  int cmp,vex=!0,cmpp,cmpm;enum bisect_result r=bisect_error;
  MemPtr given=MemPtrNew(title_len+3),copy=MemPtrNew(title_len+3);
  if(!(given&&copy)){*upper=*lower=minus;goto exit;}
- draw_chars("a",140,76);
  to_lower_n(given,copy,uncompressed+items[minus],title_len);
- draw_chars(copy,0,76);draw_chars("ar",140,76);
  cmp=compare_item(title,given,title_len);
- draw_chars(given,70,76);draw_chars("art",140,76);
  if(cmp<0)
  {*lower=*upper=minus;r=less_than_minus;
   draw_chars("ltm",80,64);
@@ -328,7 +398,7 @@ find_article(const char*title)
    case bisect_error:/*this never occurs*/ret=-2;goto exit;
    default:
   }
- }if(decompress_content())goto exit;
+ }if(decompress_content(idx_items_array(1)[lower*3+1]))goto exit;
  current_content_record=idx_items_array(1)[lower*3+1];
  prev_lower=lower;r=bisect_article(t,title_len,&lower,&upper);
  current_article=lower&~bisect_try_next;
@@ -341,10 +411,7 @@ find_article(const char*title)
    current_content_record+1);
   *indices=MemHandleLock(*idx_handles);
   /*TODO test if there are 0 articles in the record*/
-  if(!*indices)draw_chars("ind",0,130);
-  if(!*idx_handles)draw_chars("idx",20,130);
-  if(!uncompressed)draw_chars("unc",40,130);
-  if(decompress_content())
+  if(decompress_content(current_content_record+1))
   {restore_uncompressed();MemHandleUnlock(*idx_handles);
    *indices=ptr;*idx_handles=h;goto exit;
   }
@@ -423,7 +490,7 @@ list_databases(void)
  }return n;
 }int
 load_database(int index)
-{int r=!0,i;if(!databases_num)return!0;
+{int r=!0,i;if(index+1>databases_num)return!0;
  if(current_db)close_database();
  current_db=DmOpenDatabase(database_handles[index]->card,
   database_handles[index]->id,dmModeReadOnly);
@@ -436,7 +503,7 @@ load_database(int index)
  for(i=0;i<=*ary;i++)
  {idx_handles[i]=DmQueryRecord(current_db,ary_records[i]);
   indices[i]=MemHandleLock(idx_handles[i]);
- }db_idx=index;return decompress_content();
+ }db_idx=index;return decompress_content(current_content_record=first_record(0));
 }
 static void
 clr_articles(void)
@@ -500,7 +567,7 @@ show_article(void)
    else MemHandleUnlock(*idx_handles);
    *idx_handles=DmQueryRecord(current_db,cur_rec);
    *indices=MemHandleLock(*idx_handles);
-   if(decompress_content())break;/*TODO cache previous-next records*/
+   if(decompress_content(cur_rec))break;
   }
   art=article_ptr(art_num++);
   WinDrawChars(art,StrLen(art),x,y);
@@ -621,11 +688,15 @@ init_statum(void)
 init(void)
 {if(setup_zlib())ZLibRef=0;
  if(!list_databases())goto close_zlib;
- if(ZLibRef)if(init_memory())goto close_zlib;
+ if(ZLibRef)
+ {if(init_memory())goto close_zlib;
+  if(init_cache())goto close_mem;
+  zlib_buf=alloc_zlib_buf();if(!zlib_buf)goto close_cache;
+ }
  init_show_battery();
- if(ZLibRef){zlib_buf=alloc_zlib_buf();if(!zlib_buf)goto close_mem;}
  if(!init_statum())return 0;
- close_mem:close_memory();
+ close_cache:if(ZLibRef)close_cache();
+ close_mem:if(ZLibRef)close_memory();
  close_zlib:if(ZLibRef){ZLTeardown;}return!0;
 }static int current_form;FormType*form;
 FormType*
@@ -646,9 +717,9 @@ show_next_article(int increment)
    if(current_content_record==first_record(0))
     current_content_record=first_record(1)-1;
    else--current_content_record;
-   idx_handles[0]=DmQueryRecord(current_db,current_content_record);
-   indices[0]=MemHandleLock(idx_handles[0]);
-   if(decompress_content())return!0;
+   *idx_handles=DmQueryRecord(current_db,current_content_record);
+   *indices=MemHandleLock(*idx_handles);
+   if(decompress_content(current_content_record))return!0;
    if(articles_number()<=increment)current_article=0;
    else current_article=articles_number()-increment;
   }else current_article-=increment;
@@ -659,9 +730,9 @@ show_next_article(int increment)
    if(current_content_record+1>=first_record(1))
    {current_content_record=first_record(0);
    }else current_content_record++;
-   idx_handles[0]=DmQueryRecord(current_db,current_content_record);
-   indices[0]=MemHandleLock(idx_handles[0]);
-   if(decompress_content())return!0;
+   *idx_handles=DmQueryRecord(current_db,current_content_record);
+   *indices=MemHandleLock(idx_handles[0]);
+   if(decompress_content(current_content_record))return!0;
    current_article=current_article+increment-n;
    if(current_article>=articles_number())current_article=articles_number()-1;
   }else current_article+=increment;
@@ -785,7 +856,10 @@ close_all(void)
   const char*s=FldGetTextPtr(fl);
   set_lookup(s);FrmEraseForm(form);FrmDeleteForm(form);
  }save_preferences();free_database_handles();close_database();
- close_memory();if(zlib_buf)MemPtrFree(zlib_buf);if(ZLibRef){ZLTeardown;}
+ if(ZLibRef)
+ {close_cache();close_memory();if(zlib_buf)MemPtrFree(zlib_buf);
+  ZLTeardown;
+ }
 }UInt32
 PilotMain(UInt16 cmd,void*params,UInt16 flags)
 {if(cmd!=sysAppLaunchCmdNormalLaunch)return 0;
