@@ -200,6 +200,7 @@ bisect(const char*title,int title_len,int arity,
   }
   if(facunde)
   {char s[0x55];StrCopy(s,indices[arity]+items[item*3+2]);
+   draw_chars("   ",0,52);
    StrCat(s,":");StrIToA(s+StrLen(s),arity);
    StrCat(s,":");StrIToA(s+StrLen(s),item);
    StrCat(s,":");StrIToA(s+StrLen(s),idx_items_num(arity));
@@ -207,7 +208,7 @@ bisect(const char*title,int title_len,int arity,
    StrCat(s,":");StrIToA(s+StrLen(s),plus);
    StrCat(s,"     ");draw_chars(s,0,52);
   }
- }while(plus-1>minus);
+ }while(plus>minus+1);
  item=minus;if(!cmpp)item|=bisect_try_next;*lower=item;
  /*minus=mixime;plus=maxime;
  item=(plus+(unsigned long)minus)>>1;
@@ -262,7 +263,7 @@ bisect_article(const char*title,int title_len,
    StrCat(s,":");StrIToA(s+StrLen(s),plus);
    StrCat(s,"     ");WinDrawChars(s,StrLen(s),0,52);
   }
- }while(plus-1>minus);if(!cmpp)item=plus;else item=minus;
+ }while(plus>minus+1);if(!cmpp)item=plus;else item=minus;
  *lower=item;minus=mixime;plus=maxime;
  /*while(plus-1>minus)
  {to_lower_n(given,copy,uncompressed+items[item],title_len-1);
@@ -276,19 +277,21 @@ bisect_article(const char*title,int title_len,
 static struct mem_chunk saved_uncomp_h;static const char*saved_uncompressed;
 static int
 save_uncompressed(void)
-{saved_uncomp_h=uncompressed_chunk;
- uncompressed_chunk.d=-1;saved_uncompressed=uncompressed;
- uncompressed=0;return 0;
+{if(compression_bit&*features)
+ {saved_uncomp_h=uncompressed_chunk;uncompressed_chunk.d=-1;}
+ saved_uncompressed=uncompressed;uncompressed=0;return 0;
 }
 static void
 discard_saved_uncompressed(void)
-{free_chunk(saved_uncomp_h);
- saved_uncompressed=0;saved_uncomp_h.d=-1;
+{if(compression_bit&*features)
+ {free_chunk(saved_uncomp_h);saved_uncomp_h.d=-1;}
+ saved_uncompressed=0;
 }static int
 restore_uncompressed(void)
-{free_chunk(uncompressed_chunk);uncompressed_chunk=saved_uncomp_h;
- uncompressed=saved_uncompressed;
- saved_uncomp_h.d=-1;saved_uncompressed=0;return 0;
+{if(compression_bit&*features)
+ {free_chunk(uncompressed_chunk);
+  uncompressed_chunk=saved_uncomp_h;saved_uncomp_h.d=-1;
+ }uncompressed=saved_uncompressed;saved_uncompressed=0;return 0;
 }static int
 find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
@@ -333,11 +336,10 @@ find_article(const char*title)
   &&current_content_record+1<first_record(1))
  {MemHandle h=*idx_handles;MemPtr ptr=*indices;
   int cmp;const unsigned*items;
-  if(compression_bit&*features)save_uncompressed();
+  save_uncompressed();
   *idx_handles=DmQueryRecord(current_db,
    current_content_record+1);
   *indices=MemHandleLock(*idx_handles);
-  
   /*TODO test if there are 0 articles in the record*/
   if(!*indices)draw_chars("ind",0,130);
   if(!*idx_handles)draw_chars("idx",20,130);
@@ -481,7 +483,7 @@ show_article(void)
  int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,
   width=screen_width-x0,xb;
  MemHandle rec=*idx_handles;MemPtr ptr=*indices;
- const char*uncomp=0;unsigned long tic=TimGetTicks();
+ int saved=0;unsigned long tic=TimGetTicks();
  if(!current_db)return;
  if(facunde)
  {char s[0x33];StrIToA(s,current_content_record);StrCat(s,":");
@@ -494,8 +496,7 @@ show_article(void)
   if(art_num>=articles_number())
   {if(cur_rec+1>=first_record(1))break;
    art_num=0;cur_rec++;
-   if(!uncomp)
-   {uncomp=uncompressed;if(compression_bit&*features)save_uncompressed();}
+   if(!saved){saved=!0;save_uncompressed();}
    else MemHandleUnlock(*idx_handles);
    *idx_handles=DmQueryRecord(current_db,cur_rec);
    *indices=MemHandleLock(*idx_handles);
@@ -527,9 +528,9 @@ show_article(void)
    y+=dy;n0+=n;x=x0;art+=n;
   }while(*art&&y<y_max);article_marked=0;
  }
- if(uncomp)
+ if(saved)
  {unlock_handle(idx_handles);*idx_handles=rec;*indices=ptr;
-  if(compression_bit&*features)restore_uncompressed();
+  restore_uncompressed();
  }
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-30,status_line_y);
