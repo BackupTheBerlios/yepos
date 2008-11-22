@@ -22,6 +22,7 @@ draw_chars(const char*s,int x,int y)
 {if(facunde)WinDrawChars(s,StrLen(s),x,y);
  if(facunde>1)SysTaskDelay(50);
 }
+static unsigned long global_ticks;
 static unsigned*features,*record_size,*ary,*volumes,
  *vol,*ary_records,rec0_size,comment_size;
 static char*db_comment;
@@ -745,6 +746,9 @@ clr_status_line(void)
 on_enter_main_form(void)
 {const char*s0=StrChr(db_comment,'\n')+1;int field_idx;
  FrmDrawForm(form);show_battery(!0);clr_status_line();
+ {char s[17];int sl;StrIToA(s,TimGetTicks()-global_ticks);sl=StrLen(s);
+  WinDrawChars(s,sl,screen_width-sl*5-60,status_line_y);
+ }
  if(s0)
  {const char*s1=StrChr(s0,'\n');
   if(s1)WinDrawChars(s0,s1-s0,25,status_line_y);
@@ -863,6 +867,7 @@ close_all(void)
 }UInt32
 PilotMain(UInt16 cmd,void*params,UInt16 flags)
 {if(cmd!=sysAppLaunchCmdNormalLaunch)return 0;
+ global_ticks=TimGetTicks();
  if(init()){SysTaskDelay(50);return 0;}
  goto_form(MainForm_id);event_loop();
  close_all();return 0;
