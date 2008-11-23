@@ -745,10 +745,14 @@ show_next_article(int increment)
 clr_status_line(void)
 {static struct RectangleType r={{25,0},{160-25,9}};
  WinEraseRectangle(&r,0);
-}static void
+}static int skip_main_form_redraw;
+void
+skip_next_redraw(void){skip_main_form_redraw=!0;}
+static void
 on_enter_main_form(void)
 {const char*s0=StrChr(db_comment,'\n')+1;int field_idx;static int vex;
- FrmDrawForm(form);show_battery(!0);clr_status_line();
+ FrmDrawForm(form);show_battery(!0);
+ clr_status_line();
  if(!vex)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-global_ticks);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-60,status_line_y);vex=!0;
@@ -763,8 +767,8 @@ on_enter_main_form(void)
   if(s&&StrLen(s))
   {FldInsert(fl,s,StrLen(s));
    FldSetSelection(fl,0,FldGetTextLength(fl));
-  }if(!find_article(s))show_article();
- }
+  }if(!(skip_main_form_redraw||find_article(s)))show_article();
+ }skip_main_form_redraw=0;
 }static int crosshair_x,crosshair_y,ch_shown;
 static void
 draw_crosshair(int x,int y)

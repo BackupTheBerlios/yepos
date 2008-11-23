@@ -6,7 +6,7 @@
 #include"../include/signs.h"
 #include"prefs.h"
 #include"show_battery.h"
-static int upper_db,selected;
+static int upper_db,selected,change_flag;
 static void
 show_buttons(FormType*f)
 {int n,m,i,i0=0;struct database_handle**h;
@@ -50,7 +50,7 @@ on_enter(void)
  show_selected_database(f);
  {char s[17];StrIToA(s,TimGetTicks()-tic);
   WinDrawChars(s,StrLen(s),160-StrLen(s)*5-2,-2);
- }
+ }change_flag=0;
 }static int
 process_push(int n)
 {FormType*f=get_current_form();UInt16 idx;ControlType*b;
@@ -80,16 +80,21 @@ process_push(int n)
   b=FrmGetObjectPtr(f,idx);CtlSetValue(b,i==n);
  }selected=upper_db+n;
  return 0;
-}Boolean
+}static void
+return_from_settings(void)
+{if(!change_flag)skip_next_redraw();goto_form(MainForm_id);}
+Boolean
 settings_form_handler(EventType*e)
 {switch(e->eType)
  {case frmOpenEvent:on_enter();break;
   case ctlSelectEvent:
    switch(e->data.ctlSelect.controlID)
-   {case OK_Button_id:if(get_current_db_idx()!=selected)load_database(selected);
-     goto_form(MainForm_id);break;
+   {case OK_Button_id:
+     if(get_current_db_idx()!=selected)
+     {load_database(selected);change_flag=!0;}
+     return_from_settings();break;
     case Cancel_Button_id:
-     goto_form(MainForm_id);break;
+     return_from_settings();break;
     default:
      if(e->data.ctlSelect.controlID>=Dictionary_Pushbutton_First_id
         &&e->data.ctlSelect.controlID<=Dictionary_Pushbutton_Last_id)
