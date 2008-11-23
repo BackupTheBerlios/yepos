@@ -364,6 +364,13 @@ find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
  unsigned title_len;enum bisect_result r;char*t;int ret=0;
  unsigned long tic=TimGetTicks();if(!current_db)return!0;
+ if(!title||!*title)
+ {current_article=0;current_content_record=first_record(0);
+  if(*idx_handles)MemHandleUnlock(*idx_handles);
+  *indices=0;*idx_handles=DmQueryRecord(current_db,current_content_record);
+  if(!*idx_handles)return!0;*indices=MemHandleLock(*idx_handles);
+  if(!*indices)return!0;return decompress_content(current_content_record);
+ }
  title_len=StrLen(title);t=MemPtrNew(title_len+1);
  if(!t)return-1;to_lower(t,title);
  for(arity=*ary,try_next=0;arity>0;arity--)
@@ -500,8 +507,7 @@ load_database(int index)
  for(i=0;i<=*ary;i++)
  {idx_handles[i]=DmQueryRecord(current_db,ary_records[i]);
   indices[i]=MemHandleLock(idx_handles[i]);
- }db_idx=index;
- return decompress_content(current_content_record=first_record(0));
+ }db_idx=index;current_content_record=first_record(0);return 0;
 }
 static void
 clr_articles(void)
@@ -753,12 +759,12 @@ on_enter_main_form(void)
  }WinDrawLine(23,10,screen_width,10);
  FrmSetFocus(form,field_idx=FrmGetObjectIndex(form,LookupField_id));
  {FieldType*fl=FrmGetObjectPtr(form,field_idx);const char*s=get_lookup();
+  FldDelete(fl,0,FldGetTextLength(fl));
   if(s&&StrLen(s))
-  {FldDelete(fl,0,FldGetTextLength(fl));
-   FldInsert(fl,s,StrLen(s));find_article(s);
+  {FldInsert(fl,s,StrLen(s));
    FldSetSelection(fl,0,FldGetTextLength(fl));
-  }
- }show_article();
+  }if(!find_article(s))show_article();
+ }
 }static int crosshair_x,crosshair_y,ch_shown;
 static void
 draw_crosshair(int x,int y)
