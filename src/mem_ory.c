@@ -4,7 +4,7 @@
 #include"../include/signs.h"
 #define mem_db_type ('Cach')
 enum local_enums{mem_handles_num=0x11,min_chunk_size=4};
-enum debug_constants{facunde=1};
+enum debug_constants{facunde=0};
 static const char db_name[]="/var/lib/yepos/malloc";
 static DmOpenRef db;
 static MemHandle busy_handles[mem_handles_num];
@@ -50,7 +50,10 @@ alloc_chunk(unsigned size)
  if(!(busy_handles[i]=DmResizeRecord(db,i,size)))
  {draw_chars("can't resize  ");m.d=chunk_resize_failed;return m;}
  m.d=i;m.p=MemHandleLock(busy_handles[i]);if(!m.p)m.d=handle_lock_failed;
- return m;
+ if(facunde)
+ {char s[0x33];StrCopy(s,"alloc_chunk ");StrIToA(s+StrLen(s),m.d);StrCat(s,"   ");
+  draw_chars(s);
+ }return m;
 }
 const char*
 lock_chunk(struct mem_chunk m)
@@ -60,7 +63,10 @@ lock_chunk(struct mem_chunk m)
 }void
 free_chunk(struct mem_chunk p)
 {mem_chunk_descriptor d=p.d;
- if(d>=mem_handles_num||d<0)return;
+ if(facunde)
+ {char s[0x33];StrCopy(s,"free_chunk ");StrIToA(s+StrLen(s),d);StrCat(s,"   ");
+  draw_chars(s);
+ }if(d>=mem_handles_num||d<0)return;
  if(busy_handles[d]){MemHandleUnlock(busy_handles[d]);busy_handles[d]=0;}
  DmResizeRecord(db,d,min_chunk_size);
 }/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93

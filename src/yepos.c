@@ -69,7 +69,6 @@ parse_header(int verbous)
   WinDrawChars(s,StrLen(s),0,y);y+=incy;
  }return 0;
 }MemHandle*idx_handles;
-struct mem_chunk uncompressed_chunk;
 static const char*uncompressed;char**indices;
 static unsigned current_article,current_content_record=1;
 struct cache_item
@@ -108,9 +107,13 @@ inflate_into_chunk(struct mem_chunk m)
   if(err)zlib_error_alert(err,"inflateEnd");
  exit:
   uncompressed=lock_chunk(m);return err;
-}static int
+}static const char*saved_uncompressed;
+static int
 find_cache_item(unsigned rec_num)
 {int i=cache_head,d=get_current_db_idx(),idle_item=(cache_head+1)&cache_length_mask;
+ if(saved_uncompressed&&cache[idle_item].chunk.d>=0
+    &&saved_uncompressed==cache[idle_item].content)
+  idle_item=(idle_item+1)&cache_length_mask; 
  if(facunde)
  {char s[0x33];StrCopy(s,"cache find ");StrCat(s,"(");
    StrIToA(s+StrLen(s),d);StrCat(s,":");
@@ -118,8 +121,7 @@ find_cache_item(unsigned rec_num)
    draw_chars(s,0,0);
  }
  do
- {
-  if(facunde)
+ {if(facunde)
   {char s[0x33];StrCopy(s,"cache ");StrIToA(s+StrLen(s),i);StrCat(s,":(");
    StrIToA(s+StrLen(s),cache[i].db_idx);StrCat(s,":");
    StrIToA(s+StrLen(s),cache[i].rec_num);StrCat(s,");");
@@ -128,7 +130,15 @@ find_cache_item(unsigned rec_num)
   }
   if(cache[i].chunk.d<0){idle_item=i;goto next_i;}
   if(d==cache[i].db_idx&&rec_num==cache[i].rec_num)
-  {uncompressed=cache[i].content;return i;}
+  {if(facunde)
+   {char s[0x33];StrCopy(s,"found ");StrCat(s," ");
+    StrIToA(s+StrLen(s),i);StrCat(s,":(");
+    StrIToA(s+StrLen(s),d);StrCat(s,":");
+    StrIToA(s+StrLen(s),rec_num);StrCat(s,")");
+    StrIToH(s+StrLen(s),(UInt32)(cache[i].content));StrCat(s,"  ");
+    draw_chars(s,0,0);
+   }uncompressed=cache[i].content;return i;
+  }
   next_i:i=(i-1)&cache_length_mask;
  }while(i!=cache_head);
  if(facunde)
@@ -138,15 +148,16 @@ find_cache_item(unsigned rec_num)
    StrIToA(s+StrLen(s),cache[idle_item].chunk.d);StrCat(s,"  ");
    draw_chars(s,0,0);
  }
- if(cache[idle_item].chunk.d>=0)free_chunk(cache[idle_item].chunk);
- cache[idle_item].chunk.d=invalid_chunk_descriptor;
- i=(idle_item+1)&cache_length_mask;
+ if(cache[idle_item].chunk.d>=0)
+ {free_chunk(cache[idle_item].chunk);
+  cache[idle_item].chunk.d=invalid_chunk_descriptor;
+ }i=(idle_item+1)&cache_length_mask;
  while(i!=idle_item)
  {cache[idle_item].chunk=alloc_chunk(*record_size);
   if(cache[idle_item].chunk.d>=0){cache_head=idle_item;break;}
   while(i!=idle_item)
   {int i_prev=i;i=(i+1)&cache_length_mask;
-   if(cache[i_prev].chunk.d>=0)
+   if(cache[i_prev].chunk.d>=0&&(!saved_uncompressed||saved_uncompressed!=cache[i_prev].content))
    {free_chunk(cache[i_prev].chunk);
     cache[i_prev].chunk.d=invalid_chunk_descriptor;break;
    }
@@ -165,8 +176,7 @@ find_cache_item(unsigned rec_num)
    cache[idle_item].chunk.d=invalid_chunk_descriptor;
   }else
   {cache[idle_item].rec_num=rec_num;cache[idle_item].db_idx=d;
-   cache[idle_item].content=uncompressed;
-   return idle_item;
+   cache[idle_item].content=uncompressed;return idle_item;
   }
  }return-1;
 }
@@ -193,15 +203,10 @@ free_indices(void)
   for(i=0;i<MemPtrSize(idx_handles)/sizeof(*idx_handles);i++)
    unlock_handle(idx_handles+i);
   MemPtrFree(idx_handles);idx_handles=0;
- }
- if(uncompressed_chunk.d>=0)
- {free_chunk(uncompressed_chunk);
-  uncompressed_chunk.d=-1;uncompressed=0;
- }current_article=0;current_content_record=1;
- close_cache();
+ }uncompressed=0;current_article=0;current_content_record=1;
 }static int
 alloc_indices(void)
-{int vex=0;uncompressed_chunk.d=-1;
+{int vex=0;
  indices=MemPtrNew(sizeof(*indices)*(*ary+1));
  vex|=!indices;
  idx_handles=MemPtrNew(sizeof(*idx_handles)*(*ary+1));
@@ -237,7 +242,7 @@ close_database(void)
 static int
 decompress_content(unsigned rec_num)
 {int cache_idx;
- if(!(*features&compression_bit)){uncompressed=indices[0];return 0;}
+ if(!(*features&compression_bit)){uncompressed=*indices;return 0;}
  uncompressed=0;cache_idx=find_cache_item(rec_num);
  if(cache_idx<0)return!0;return 0;
 }static void
@@ -346,26 +351,15 @@ bisect_article(const char*title,int title_len,
  }if(cmp>0)item=plus;if(cmp==0)item=minus;*upper=item;*/
  r=bisect_returns_range;
  exit:if(given)MemPtrFree(given);if(copy)MemPtrFree(copy);return r;
-}
-static struct mem_chunk saved_uncomp_h;static const char*saved_uncompressed;
-static int
+}static int
 save_uncompressed(void)
-{if(compression_bit&*features)
- {saved_uncomp_h=uncompressed_chunk;uncompressed_chunk.d=-1;}
- saved_uncompressed=uncompressed;uncompressed=0;return 0;
-}
+{saved_uncompressed=uncompressed;uncompressed=0;return 0;}
 static void
-discard_saved_uncompressed(void)
-{if(compression_bit&*features)
- {free_chunk(saved_uncomp_h);saved_uncomp_h.d=-1;}
- saved_uncompressed=0;
-}static int
+discard_saved_uncompressed(void){saved_uncompressed=0;}
+static int
 restore_uncompressed(void)
-{if(compression_bit&*features)
- {free_chunk(uncompressed_chunk);
-  uncompressed_chunk=saved_uncomp_h;saved_uncomp_h.d=-1;
- }uncompressed=saved_uncompressed;saved_uncompressed=0;return 0;
-}static int
+{uncompressed=saved_uncompressed;saved_uncompressed=0;return 0;}
+static int
 find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
  unsigned title_len;enum bisect_result r;char*t;int ret=0;
@@ -429,8 +423,7 @@ find_article(const char*title)
     if(compression_bit&*features)restore_uncompressed();
     *indices=ptr;
    }else{current_content_record++;current_article=0;}
-   if(*features&compression_bit)if(saved_uncomp_h.d>=0)
-    discard_saved_uncompressed();
+   discard_saved_uncompressed();
    MemHandleUnlock(h);
    draw_chars(given,0,91);
    free_copies:
@@ -507,7 +500,8 @@ load_database(int index)
  for(i=0;i<=*ary;i++)
  {idx_handles[i]=DmQueryRecord(current_db,ary_records[i]);
   indices[i]=MemHandleLock(idx_handles[i]);
- }db_idx=index;return decompress_content(current_content_record=first_record(0));
+ }db_idx=index;
+ return decompress_content(current_content_record=first_record(0));
 }
 static void
 clr_articles(void)
