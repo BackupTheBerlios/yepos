@@ -28,6 +28,9 @@ BEGIN
  "cum vocabularium compressum est"
 "#no_memory help" = "try deleting some unnecessary data"
 "#can't allocate memory" = "can't allocate memory"
+"#fail_opening help" = "I don't know, why;"\
+ " certainly, it is yepos bug"
+"#can't open database" = "couldn't open database"
 "#dictionary" = "Dictionary"
 "#ok" = "OK"
 "#cancel" = "Cancel"

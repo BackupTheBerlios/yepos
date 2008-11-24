@@ -14,6 +14,8 @@
 #define ZLib_Mem_Error_Alert_Help_id		(4900)
 #define ZLib_Mem_Error_Alert_id			(4899)
 #define SettingsForm_id				(4898)
+#define Fail_Opening_Alert_Help_id		(4897)
+#define Fail_Opening_Alert_id			(4896)
 #define Dictionary_Pushbutton_First_id		(3400)
 #define Dictionary_Pushbuttons_number		(5)
 #define Dictionary_Pushbutton_Last_id		(Dictionary_Pushbutton_First_id+Dictionary_Pushbuttons_number-1)

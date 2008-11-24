@@ -498,11 +498,7 @@ load_database(int index)
  if(current_db)close_database();
  current_db=DmOpenDatabase(database_handles[index]->card,
   database_handles[index]->id,dmModeReadOnly);
- if(!current_db)
- {char s[0x33];StrCopy(s,"fail opening ");
-  WinDrawChars(s,StrLen(s),0,148);
-  return!0;
- }
+ if(!current_db){FrmAlert(Fail_Opening_Alert_id);return!0;}
  if(parse_header(0)||alloc_indices()){close_database();return r;}
  for(i=0;i<=*ary;i++)
  {idx_handles[i]=DmQueryRecord(current_db,ary_records[i]);
@@ -606,74 +602,7 @@ show_article(void)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-30,status_line_y);
  }
-}/*static void
-process_database(LocalID id)
-{MemHandle content_rec;MemPtr content;
- current_db=DmOpenDatabase(0,id,dmModeReadOnly);
- if(parse_header(!0))goto bad_header;
- if(compression_bit&*features)
- {unsigned i,n=ary_records[1];char s[0x88],*st;
-  unsigned long tic0=0,max_tics=0;int err=0;
-  StrCopy(s,"Rec ");st=s+StrLen(s);
-  zlib_buf=alloc_zlib_buf();
-  if(zlib_buf)
-  {for(i=ary_records[0];i<n;i++)
-   {unsigned long tic1=TimGetTicks();unsigned cont_size,*orig_size;
-    char*cont;uLongf dest_len;z_stream str;
-    MemSet(&str,sizeof str,0);
-    content_rec=DmQueryRecord(current_db,i);
-    content=MemHandleLock(content_rec);
-    cont=((char*)content)+2;orig_size=(unsigned*)content;
-    dest_len=*orig_size;cont_size=MemPtrSize(content)-2;
-    str.next_out=uncompressed;
-    str.avail_out=*record_size;
-    str.next_in=cont;
-    str.avail_in=cont_size;
-    err=inflateInit(&str);
-    if(err)zlib_error_alert(err,"inflateInit");
-    if(!err)
-    {err=inflate(&str,Z_FINISH);
-     if(err!=Z_STREAM_END)zlib_error_alert(err,"inflate");
-     err=err!=Z_STREAM_END;
-    }
-    if(!err)
-    {err=inflateEnd(&str);
-     if(err)zlib_error_alert(err,"inflateEnd");
-    }
-    MemHandleUnlock(content_rec);
-    tic1=TimGetTicks()-tic1;
-    if(max_tics<tic1)max_tics=tic1;
-    tic0+=tic1;
-    StrIToA(st,i);StrCat(st,": dt ");StrIToA(st+StrLen(st),tic1);
-    StrCat(st,"; ");StrIToA(st+StrLen(st),max_tics);
-    StrCat(st,"; ");StrIToA(st+StrLen(st),tic0);StrCat(st,"; err ");
-    StrIToA(st+StrLen(st),(int)err);StrCat(st,"          ");
-    WinDrawChars(s,StrLen(s),0,130);
-    StrIToA(st,cont_size);StrCat(st,":");StrIToA(st+StrLen(st),dest_len);
-    StrCat(st,"   ");WinDrawChars(st,StrLen(st),0,142);
-    if(err)break;
-   }MemPtrFree(uncompressed);uncompressed=0;
-  }
- }else
- {unsigned i,ptr_size,*orig_size,*articles,*tptr;char*cont;
-  char s[0x33],*st;uLongf dest_len;
-  content_rec=DmQueryRecord(current_db,ary_records[0]);
-  content=MemHandleLock(content_rec);
-  dest_len=*orig_size;ptr_size=MemPtrSize(content);
-  cont=(char*)content;
-  articles=(unsigned*)content;tptr=articles+1;
-  StrCopy(s,"articles: ");StrIToA(s,articles[0]);
-  StrCat(s,"   ");WinDrawChars(s,StrLen(s),0,110);
-  StrCopy(s,"title 0: `");
-  st=s+StrLen(s);
-  for(i=0;i<5&&cont[tptr[0]+i];i++)*st++=cont[tptr[0]+i];
-  *st=0;StrCat(s,"'");
-  StrCat(st,"   ");WinDrawChars(s,StrLen(s),0,122);
-  MemHandleUnlock(content_rec);
- }
-bad_header:MemHandleUnlock(record0);DmCloseDatabase(current_db);current_db=0;
-}*/
-static int
+}static int
 setup_zlib(void)
 {if(!SysLibFind("Zlib",&ZLibRef))return 0;
  if(SysLibLoad('libr', 'ZLib',&ZLibRef))return!0;
