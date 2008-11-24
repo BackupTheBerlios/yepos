@@ -68,8 +68,8 @@ parse_header(int verbous)
   StrIToA(s+StrLen(s),ary_records[i]);
   WinDrawChars(s,StrLen(s),0,y);y+=incy;
  }return 0;
-}MemHandle*idx_handles;
-static const char*uncompressed;char**indices;
+}MemHandle idx_handles[2];
+static const char*uncompressed;char*indices[2];
 static unsigned current_article,current_content_record=1;
 struct cache_item
 {int db_idx;unsigned rec_num;struct mem_chunk chunk;
@@ -181,9 +181,9 @@ find_cache_item(unsigned rec_num)
  }return-1;
 }
 static unsigned
-idx_items_num(int arity){return*((unsigned*)(indices[arity])+1);}
+idx_items_num(void){return*((unsigned*)(indices[1])+1);}
 static const unsigned*
-idx_items_array(int arity){return((unsigned*)(indices[arity]))+2;}
+idx_items_array(void){return((unsigned*)(indices[1]))+2;}
 static unsigned
 first_record(int arity){return ary_records[arity];}
 static unsigned
@@ -197,24 +197,13 @@ unlock_handle(MemHandle*handle)
 {if(*handle){MemHandleUnlock(*handle);*handle=0;}}
 static void
 free_indices(void)
-{if(indices)MemPtrFree(indices);indices=0;
- if(idx_handles)
- {int i;
-  for(i=0;i<MemPtrSize(idx_handles)/sizeof(*idx_handles);i++)
-   unlock_handle(idx_handles+i);
-  MemPtrFree(idx_handles);idx_handles=0;
- }uncompressed=0;current_article=0;current_content_record=1;
+{int i;
+ for(i=0;i<sizeof(idx_handles)/sizeof(*idx_handles);i++)
+  unlock_handle(idx_handles+i);
+ uncompressed=0;current_article=0;current_content_record=1;
 }static int
-alloc_indices(void)
-{int vex=0;
- indices=MemPtrNew(sizeof(*indices)*(*ary+1));
- vex|=!indices;
- idx_handles=MemPtrNew(sizeof(*idx_handles)*(*ary+1));
- vex|=!idx_handles;
- if(!vex)current_content_record=first_record(0);
- if(vex)FrmAlert(Memory_Short_Alert_id);
- return vex;
-}static char*
+alloc_indices(void){current_content_record=first_record(0);return 0;}
+static char*
 alloc_zlib_buf(void)
 {int i=10;char*p,*zp0,*zp1;unsigned zp0_size=1<<15,zp1_size=(1<<13)+(1<<12);
  zlib_buf_size=1<<i;
@@ -255,36 +244,35 @@ enum bisect_result
  bisect_try_next=1<<(sizeof(unsigned)*bits_per_byte-1)
 };
 static enum bisect_result
-bisect(const char*title,int title_len,int arity,
+bisect(const char*title,int title_len,
  unsigned*lower,unsigned*upper)
-{unsigned plus=idx_items_num(arity)-1,minus=0,item,maxime,mixime;
- const unsigned*items=idx_items_array(arity);int cmpp,vex=!0,cmp;
- cmp=compare_item(title,indices[arity]+items[minus*3+2],title_len);
+{unsigned plus=idx_items_num()-1,minus=0,item,maxime,mixime;
+ const unsigned*items=idx_items_array();int cmpp,vex=!0,cmp;
+ cmp=compare_item(title,indices[1]+items[minus*3+2],title_len);
  if(facunde)
- {char s[0x33];StrIToA(s,arity);StrCat(s,":");
-  StrIToA(s+StrLen(s),minus);StrCat(s,":");StrIToA(s+StrLen(s),cmp);
+ {char s[0x33];
+  StrIToA(s,minus);StrCat(s,":");StrIToA(s+StrLen(s),cmp);
   StrCat(s,"   ");draw_chars(s,0,28);
-  draw_chars(indices[arity]+items[minus*3+2],0,40);
-  draw_chars(indices[arity]+items[(minus+1)*3+2],80,40);
+  draw_chars(indices[1]+items[minus*3+2],0,40);
+  draw_chars(indices[1]+items[(minus+1)*3+2],80,40);
  }
  if(cmp<0){*lower=*upper=minus;return less_than_minus;}
- cmp=compare_item(title,indices[arity]+items[plus*3+2],title_len);
- if(0)draw_chars(indices[arity]+items[plus*3+2],80,40);
+ cmp=compare_item(title,indices[1]+items[plus*3+2],title_len);
+ if(0)draw_chars(indices[1]+items[plus*3+2],80,40);
  if(cmp>0){*lower=*upper=plus;return more_than_plus;}
  maxime=mixime=plus;cmpp=-1;
  do
  {item=(plus+(unsigned long)minus)>>1;
-  cmp=compare_item(title,indices[arity]+items[item*3+2],title_len);
+  cmp=compare_item(title,indices[1]+items[item*3+2],title_len);
   if(cmp>0)minus=item;else
   {if(vex&&!cmp){vex=0;mixime=item;}if(cmp<0)maxime=item;
    plus=item;cmpp=cmp;
   }
   if(facunde)
-  {char s[0x55];StrCopy(s,indices[arity]+items[item*3+2]);
+  {char s[0x55];StrCopy(s,indices[1]+items[item*3+2]);
    draw_chars("   ",0,52);
-   StrCat(s,":");StrIToA(s+StrLen(s),arity);
    StrCat(s,":");StrIToA(s+StrLen(s),item);
-   StrCat(s,":");StrIToA(s+StrLen(s),idx_items_num(arity));
+   StrCat(s,":");StrIToA(s+StrLen(s),idx_items_num());
    StrCat(s,":");StrIToA(s+StrLen(s),minus);
    StrCat(s,":");StrIToA(s+StrLen(s),plus);
    StrCat(s,"     ");draw_chars(s,0,52);
@@ -294,7 +282,7 @@ bisect(const char*title,int title_len,int arity,
  /*minus=mixime;plus=maxime;
  item=(plus+(unsigned long)minus)>>1;
  while(plus-1>minus)
- {cmp=compare_item(title,indices[arity]+items[item*3+2],title_len);
+ {cmp=compare_item(title,indices[1]+items[item*3+2],title_len);
   if(cmp<=0)plus=item;else minus=item;
   item=(plus+(unsigned long)minus)>>1;
  }item=plus;*upper=item;*/return bisect_returns_range;
@@ -373,46 +361,49 @@ find_article(const char*title)
  }
  title_len=StrLen(title);t=MemPtrNew(title_len+1);
  if(!t)return-1;to_lower(t,title);
+ unlock_handle(idx_handles+1);unlock_handle(idx_handles);
+ *idx_handles=DmQueryRecord(current_db,first_record(*ary));
+ *indices=MemHandleLock(*idx_handles);
  for(arity=*ary,try_next=0;arity>0;arity--)
  {prev_lower=lower;
-  r=bisect(t,title_len,arity,&lower,&upper);
+  {char s[0x33];StrCopy(s,"ary ");StrIToA(s+StrLen(s),arity);
+   StrCat(s,"   ");draw_chars(s,0,0);
+  }
+  unlock_handle(idx_handles+1);
+  idx_handles[1]=*idx_handles;indices[1]=*indices;
+  r=bisect(t,title_len,&lower,&upper);
   switch(r)
   {case more_than_plus:
     if(try_next)
-    {MemHandle h=idx_handles[arity];MemPtr ptr=indices[arity];
-     unsigned low,up;
-     idx_handles[arity]=DmQueryRecord(current_db,
-      idx_items_array(arity+1)[(prev_lower+1)*3+1]);
-     indices[arity]=MemHandleLock(idx_handles[arity]);
-     r=bisect(t,title_len,arity,&low,&up);
+    {MemHandle h=idx_handles[1];MemPtr ptr=indices[1];unsigned low,up;
+     idx_handles[1]=DmQueryRecord(current_db,
+      idx_items_array()[(prev_lower+1)*3+1]);
+     indices[1]=MemHandleLock(idx_handles[1]);
+     r=bisect(t,title_len,&low,&up);
      if(r==less_than_minus)
-     {MemHandle h0=h;h=idx_handles[arity];idx_handles[arity]=h0;
-      indices[arity]=ptr;lower=low;
+     {MemHandle h0=h;h=idx_handles[1];idx_handles[1]=h0;
+      indices[1]=ptr;lower=low;
      }else{lower=low;upper=up;}
      MemHandleUnlock(h);
     }/*fall through*/
-   case less_than_minus:/*???*/
+   case less_than_minus:/*??? rare case*/
    case bisect_returns_range:
     try_next=lower&bisect_try_next;lower&=~bisect_try_next;
-    if(idx_handles[arity-1])MemHandleUnlock(idx_handles[arity-1]);
-    idx_handles[arity-1]=DmQueryRecord(current_db,
-     idx_items_array(arity)[lower*3+1]);
-    indices[arity-1]=MemHandleLock(idx_handles[arity-1]);
+    *idx_handles=DmQueryRecord(current_db,idx_items_array()[lower*3+1]);
+    *indices=MemHandleLock(*idx_handles);
     break;
    case bisect_error:/*this never occurs*/ret=-2;goto exit;
    default:
   }
- }if(decompress_content(idx_items_array(1)[lower*3+1]))goto exit;
- current_content_record=idx_items_array(1)[lower*3+1];
+ }if(decompress_content(idx_items_array()[lower*3+1]))goto exit;
+ current_content_record=idx_items_array()[lower*3+1];
  prev_lower=lower;r=bisect_article(t,title_len,&lower,&upper);
  current_article=lower&~bisect_try_next;
  if(more_than_plus==r&&try_next
   &&current_content_record+1<first_record(1))
- {MemHandle h=*idx_handles;MemPtr ptr=*indices;
-  int cmp;const unsigned*items;
+ {MemHandle h=*idx_handles;MemPtr ptr=*indices;int cmp;const unsigned*items;
   save_uncompressed();
-  *idx_handles=DmQueryRecord(current_db,
-   current_content_record+1);
+  *idx_handles=DmQueryRecord(current_db,current_content_record+1);
   *indices=MemHandleLock(*idx_handles);
   /*TODO test if there are 0 articles in the record*/
   if(decompress_content(current_content_record+1))
@@ -430,9 +421,7 @@ find_article(const char*title)
     if(compression_bit&*features)restore_uncompressed();
     *indices=ptr;
    }else{current_content_record++;current_article=0;}
-   discard_saved_uncompressed();
-   MemHandleUnlock(h);
-   draw_chars(given,0,91);
+   discard_saved_uncompressed();MemHandleUnlock(h);draw_chars(given,0,91);
    free_copies:
    if(copy)MemPtrFree(copy);if(given)MemPtrFree(given);
   }
@@ -494,16 +483,13 @@ list_databases(void)
  }return n;
 }int
 load_database(int index)
-{int r=!0,i;if(index+1>databases_num)return!0;
+{int r=!0;if(index+1>databases_num)return!0;
  if(current_db)close_database();
  current_db=DmOpenDatabase(database_handles[index]->card,
   database_handles[index]->id,dmModeReadOnly);
  if(!current_db){FrmAlert(Fail_Opening_Alert_id);return!0;}
  if(parse_header(0)||alloc_indices()){close_database();return r;}
- for(i=0;i<=*ary;i++)
- {idx_handles[i]=DmQueryRecord(current_db,ary_records[i]);
-  indices[i]=MemHandleLock(idx_handles[i]);
- }db_idx=index;current_content_record=first_record(0);return 0;
+ db_idx=index;current_content_record=first_record(0);return 0;
 }
 static void
 clr_articles(void)
@@ -646,7 +632,7 @@ show_next_article(int increment)
  if(increment<0)
  {increment=-increment;
   if(current_article<increment)
-  {MemHandleUnlock(idx_handles[0]);
+  {MemHandleUnlock(*idx_handles);
    if(current_content_record==first_record(0))
     current_content_record=first_record(1)-1;
    else--current_content_record;
@@ -659,12 +645,12 @@ show_next_article(int increment)
  }else
  {if(current_article+increment>=articles_number())
   {unsigned n=articles_number();
-   MemHandleUnlock(idx_handles[0]);
+   MemHandleUnlock(*idx_handles);
    if(current_content_record+1>=first_record(1))
    {current_content_record=first_record(0);
    }else current_content_record++;
    *idx_handles=DmQueryRecord(current_db,current_content_record);
-   *indices=MemHandleLock(idx_handles[0]);
+   *indices=MemHandleLock(*idx_handles);
    if(decompress_content(current_content_record))return!0;
    current_article=current_article+increment-n;
    if(current_article>=articles_number())current_article=articles_number()-1;
