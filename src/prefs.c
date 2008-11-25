@@ -3,6 +3,7 @@
 #include"../include/signs.h"
 #include"enums.h"
 #include"globals.h"
+#include"control_ids.h"
 enum local_constants{prefs_id=0,prefs_version=0};
 static char*lookup,db_name[db_name_size+1];
 void
@@ -12,32 +13,30 @@ set_lookup(const char*l)
  lookup=MemPtrNew(StrLen(l)+1);if(lookup)StrCopy(lookup,l);
 }const char*
 get_lookup(void){return lookup;}
-static void
-set_defaults(void){}
-static void
+static int
 try_db_name(void)
 {int i,n;struct database_handle**db=get_database_list(&n);
- for(i=0;i<n;i++)if(!StrCompare(db[i]->name,db_name))
- {load_database(i);return;}
- *db_name=0;
+ if(*db_name)for(i=0;i<n;i++)if(!StrCompare(db[i]->name,db_name))
+  if(!load_database(i))return 0;
+ *db_name=0;if(n>0)return load_database(0);
+ FrmAlert(No_Dictionary_Alert_id);return!0;
 }enum aux_flags_bits{list_mode_bit=0};
 int
 load_preferences(void)
-{UInt16 prefs_size=0;int version,n;char*p,*_;set_defaults();
+{UInt16 prefs_size=0;int version,n;char*p,*_;
  version=PrefGetAppPreferences(CREATOR,prefs_id,0,&prefs_size,0);
- if(version!=prefs_version)return 0;
- if(prefs_size<db_name_size+1)return 0;
- p=MemPtrNew(prefs_size);if(!p)return 0;_=p;
+ if(version!=prefs_version)return try_db_name();
+ if(prefs_size<db_name_size+1)return try_db_name();
+ p=MemPtrNew(prefs_size);if(!p)return try_db_name();_=p;
  version=PrefGetAppPreferences(CREATOR,prefs_id,p,&prefs_size,0);
- if(version!=prefs_version){MemPtrFree(p);return 0;}
+ if(version!=prefs_version){MemPtrFree(p);return try_db_name();}
  n=db_name_size;MemMove(db_name,_,n);_+=n;prefs_size-=n;db_name[n]=0;
- if(*db_name)try_db_name();
+ if(try_db_name())return!0;
  if(prefs_size>1)
  {n=StrLen(_)+1;lookup=MemPtrNew(n);
   if(lookup)MemMove(lookup,_,n);prefs_size-=n;_+=n;
  }if(prefs_size>0)
- {char aux_flags=*_;int x;
-  x=2*!!(aux_flags&(1<<list_mode_bit));set_list_mode(x);
+ {char aux_flags=*_;set_list_mode(2*!!(aux_flags&(1<<list_mode_bit)));
   prefs_size-=1;_+=1;
  }MemPtrFree(p);return 0;
 }static int

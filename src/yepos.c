@@ -201,9 +201,7 @@ free_indices(void)
  for(i=0;i<sizeof(idx_handles)/sizeof(*idx_handles);i++)
   unlock_handle(idx_handles+i);
  uncompressed=0;current_article=0;current_content_record=1;
-}static int
-alloc_indices(void){current_content_record=first_record(0);return 0;}
-static char*
+}static char*
 alloc_zlib_buf(void)
 {int i=10;char*p,*zp0,*zp1;unsigned zp0_size=1<<15,zp1_size=(1<<13)+(1<<12);
  zlib_buf_size=1<<i;
@@ -327,7 +325,7 @@ bisect_article(const char*title,int title_len,
    StrCat(s,":");StrIToA(s+StrLen(s),articles_number());
    StrCat(s,":");StrIToA(s+StrLen(s),minus);
    StrCat(s,":");StrIToA(s+StrLen(s),plus);
-   StrCat(s,"     ");WinDrawChars(s,StrLen(s),0,52);
+   StrCat(s,"     ");draw_chars(s,0,52);
   }
  }while(plus>minus+1);if(!cmpp)item=plus;else item=minus;
  *lower=item;minus=mixime;plus=maxime;
@@ -483,12 +481,16 @@ list_databases(void)
  }return n;
 }int
 load_database(int index)
-{int r=!0;if(index+1>databases_num)return!0;
+{if(index+1>databases_num||index<0)
+ {char s[17],t[17];StrIToA(s,index);StrIToA(t,databases_num);
+  FrmCustomAlert(Db_Index_Out_of_Range_Alert_id,s,t," ");
+  return!0;
+ }
  if(current_db)close_database();
  current_db=DmOpenDatabase(database_handles[index]->card,
   database_handles[index]->id,dmModeReadOnly);
  if(!current_db){FrmAlert(Fail_Opening_Alert_id);return!0;}
- if(parse_header(0)||alloc_indices()){close_database();return r;}
+ if(parse_header(0)){close_database();return!0;}
  db_idx=index;current_content_record=first_record(0);return 0;
 }
 static void
@@ -593,16 +595,6 @@ setup_zlib(void)
 {if(!SysLibFind("Zlib",&ZLibRef))return 0;
  if(SysLibLoad('libr', 'ZLib',&ZLibRef))return!0;
  if(SysLibOpen(ZLibRef))return!0;return 0;
-}
-static int
-init_statum(void)
-{load_preferences();if(current_db)return 0;
- if(!databases_num)
- {FrmAlert(No_Dictionary_Alert_id);return!0;}
- /*process_database(id);*/
- if(load_database(0))
- {WinDrawChars("can't load database",19,10,0);return!0;}
- return 0;
 }static int
 init(void)
 {if(setup_zlib())ZLibRef=0;
@@ -612,8 +604,7 @@ init(void)
   if(init_cache())goto close_mem;
   zlib_buf=alloc_zlib_buf();if(!zlib_buf)goto close_cache;
  }
- init_show_battery();
- if(!init_statum())return 0;
+ init_show_battery();if(!load_preferences())return 0;
  close_cache:if(ZLibRef)close_cache();
  close_mem:if(ZLibRef)close_memory();
  close_zlib:if(ZLibRef){ZLTeardown;}return!0;

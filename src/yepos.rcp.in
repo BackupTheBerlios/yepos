@@ -53,10 +53,16 @@ Begin Title "#yepos error"
  Message "#can't allocate memory"
  Buttons "#Close itself"
 End
-String Fail_Opening_Alert_Help_id "#fail_opening help"
+String Internal_Error_Str_id "#internal error help"
 Alert Fail_Opening_Alert_id
-HelpID Fail_Opening_Alert_Help_id Error
+HelpID Internal_Error_Str_id Error
 Begin Title "#yepos error"
  Message "#can't open database"
+ Buttons "#Close itself"
+End
+Alert Db_Index_Out_of_Range_Alert_id
+HelpID Internal_Error_Str_id Error
+Begin Title "#yepos error"
+ Message "#db idx out of range"
  Buttons "#Close itself"
 End

@@ -28,9 +28,11 @@ BEGIN
  "cum vocabularium compressum est"
 "#no_memory help" = "dele data non necessaria de memoria mea"
 "#can't allocate memory" = "memoria deest"
-"#fail_opening help" = "haec erratum explanare non possum;"\
+"#internal error help" = "haec erratum explicare non possum;"\
  " quippe yepos corrigendum est"
 "#can't open database" = "scapum aperire non potui"
+"#db idx out of range" = "vocabularii aperiendi index (^1) "\
+  "ex limitibus fastis (0..^2) exit"
 "#dictionary" = "Vocabularium"
 "#ok" = "Sic"
 "#cancel" = "Veto"
