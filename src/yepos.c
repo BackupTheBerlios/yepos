@@ -441,7 +441,7 @@ free_database_handles(void)
  {int i;for(i=0;i<databases_num;i++)MemPtrFree(database_handles[i]);
   MemPtrFree(database_handles);database_handles=0;databases_num=0;
  }
-}struct db_name_chain{struct database_handle*h;struct db_name_chain*next;};
+}
 static void
 clr_scrn(void)
 {static struct RectangleType r={{0,0},{160,160}};
@@ -449,6 +449,7 @@ clr_scrn(void)
 }static int
 list_databases(void)
 {int n=0;DmSearchStateType ss;UInt16 card;LocalID id;
+ struct db_name_chain{struct database_handle*h;struct db_name_chain*next;};
  struct db_name_chain*head=0;free_database_handles();
  if(DmGetNextDatabaseByTypeCreator(1,&ss,DB_TYPE,CREATOR,0,&card,&id))
   return n;
