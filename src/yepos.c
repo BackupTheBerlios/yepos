@@ -15,7 +15,7 @@ enum local_constants
 {bits_per_byte=8,screen_width=160,screen_height=160,
  x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12,
  log2_cache_length=4,cache_length=1<<log2_cache_length,
- cache_length_mask=cache_length-1
+ cache_length_mask=cache_length-1,list_mode_inc_value=7
 };
 enum local_defines{facunde=0,zlib_irrobust=1};
 static void
@@ -55,22 +55,20 @@ inflate_into_chunk(struct mem_chunk m)
   cont_size=MemPtrSize(*indices)-2;decompressed=0;
   str.next_in=(char*)cont;str.avail_in=cont_size;
   err=inflateInit(&str);
-  if(err){zlib_error_alert(err,"inflateInit");goto exit;}
+  if(err){zlib_error_alert(err,"inflateInit");return err;}
   while(decompressed<orig_size)
   {unsigned n;str.next_out=zlib_buf;str.avail_out=zlib_buf_size;
    err=inflate(&str,0);
-   if(err&&err!=Z_STREAM_END){zlib_error_alert(err,"inflate");goto exit;}
+   if(err&&err!=Z_STREAM_END){zlib_error_alert(err,"inflate");return err;}
    n=zlib_buf_size-str.avail_out;
    write_chunk(m,decompressed,zlib_buf,n);decompressed+=n;
   }while(err!=Z_STREAM_END);
-  err=inflateEnd(&str);
-  if(err)zlib_error_alert(err,"inflateEnd");
- exit:
-  uncompressed=lock_chunk(m);return err;
+  err=inflateEnd(&str);if(err)zlib_error_alert(err,"inflateEnd");return err;
 }static const char*saved_uncompressed;
 static int
-find_cache_item(unsigned rec_num)
+find_cache_item(unsigned rec_num,int assign_uncompressed)
 {int i=cache_head,d=get_current_db_idx(),idle_item=(cache_head+1)&cache_length_mask;
+ if(assign_uncompressed)uncompressed=0;
  if(saved_uncompressed&&cache[idle_item].chunk.d>=0
     &&saved_uncompressed==cache[idle_item].content)
   idle_item=(idle_item+1)&cache_length_mask; 
@@ -97,7 +95,7 @@ find_cache_item(unsigned rec_num)
     StrIToA(s+StrLen(s),rec_num);StrCat(s,")");
     StrIToH(s+StrLen(s),(UInt32)(cache[i].content));StrCat(s,"  ");
     draw_chars(s,0,0);
-   }uncompressed=cache[i].content;return i;
+   }if(assign_uncompressed)uncompressed=cache[i].content;return i;
   }
   next_i:i=(i-1)&cache_length_mask;
  }while(i!=cache_head);
@@ -117,7 +115,8 @@ find_cache_item(unsigned rec_num)
   if(cache[idle_item].chunk.d>=0){cache_head=idle_item;break;}
   while(i!=idle_item)
   {int i_prev=i;i=(i+1)&cache_length_mask;
-   if(cache[i_prev].chunk.d>=0&&(!saved_uncompressed||saved_uncompressed!=cache[i_prev].content))
+   if(cache[i_prev].chunk.d>=0&&
+      (!saved_uncompressed||saved_uncompressed!=cache[i_prev].content))
    {free_chunk(cache[i_prev].chunk);
     cache[i_prev].chunk.d=invalid_chunk_descriptor;break;
    }
@@ -135,8 +134,10 @@ find_cache_item(unsigned rec_num)
   {free_chunk(cache[idle_item].chunk);
    cache[idle_item].chunk.d=invalid_chunk_descriptor;
   }else
-  {cache[idle_item].rec_num=rec_num;cache[idle_item].db_idx=d;
-   cache[idle_item].content=uncompressed;return idle_item;
+  {const char*uc=lock_chunk(cache[idle_item].chunk);
+   cache[idle_item].rec_num=rec_num;cache[idle_item].db_idx=d;
+   cache[idle_item].content=uc;if(assign_uncompressed)uncompressed=uc;
+   return idle_item;
   }
  }return-1;
 }
@@ -187,7 +188,7 @@ static int
 decompress_content(unsigned rec_num)
 {int cache_idx;
  if(!(dh.features&compression_bit)){uncompressed=*indices;return 0;}
- uncompressed=0;cache_idx=find_cache_item(rec_num);
+ cache_idx=find_cache_item(rec_num,!0);
  if(cache_idx<0)return!0;return 0;
 }static void
 to_lower(char*dest,const char*src){StrToLower(dest,src);}
@@ -536,6 +537,15 @@ show_article(void)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-30,status_line_y);
  }
+ if(art_num+list_mode_inc_value>articles_number()
+   &&(dh.features&compression_bit))
+ {unsigned rn=cur_rec+1;if(rn>=first_record(1))rn=first_record(0);
+  find_cache_item(rn,0);
+ }
+ if(art_num<list_mode_inc_value&&(dh.features&compression_bit))
+ {unsigned rn=cur_rec;if(rn<1)rn=first_record(1)-1;else rn--;
+  find_cache_item(rn,0);
+ }
 }static int
 setup_zlib(void)
 {if(!SysLibFind("Zlib",&ZLibRef))return 0;
@@ -627,7 +637,7 @@ draw_crosshair(int x,int y)
 {WinInvertLine(x-7,y-7,x+7,y+7);WinInvertLine(x+7,y-7,x-7,y+7);
  crosshair_x=x;crosshair_y=y;ch_shown=!ch_shown;
 }static int
-increment_value(void){return list_mode?7:1;}
+increment_value(void){return list_mode?list_mode_inc_value:1;}
 static unsigned evt_loop_delay=289;
 static Boolean
 main_form_handler(EventType*e)
