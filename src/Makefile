@@ -41,13 +41,13 @@ ${Macul}/%/bin.stamp:${Macul}/%/${TARGET}.rcp control_ids.h ${Macul}/dirs.stamp
 	pilrc -q -L $* $< ${Macul}/$*
 	touch $@
 ${o}/${TARGET}: ${o}/yepos.o ${o}/show_battery.o ${o}/prefs.o ${o}/settings.o\
- ${o}/zlib_error_alert.o ${o}/mem_ory.o
+ ${o}/zlib_error_alert.o ${o}/mem_ory.o ${o}/dict_header.o
 	${LD} ${LDFLAGS} -o $@ $^
 ${o}/mem_ory.test: ${o}/mem_ory.test.o ${o}/mem_ory.o
 	${LD} ${LDFLAGS} -o $@ $^
 ${o}/${TARGET}.o: yepos.c control_ids.h show_battery.h globals.h\
  prefs.h ../include/signs.h enums.h settings.h zlib_error_alert.h\
- mem_ory.h
+ mem_ory.h dict_header.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/show_battery.o: show_battery.c show_battery.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
@@ -56,7 +56,7 @@ ${o}/prefs.o: prefs.c prefs.h globals.h ../include/signs.h enums.h
 ${o}/settings.o: settings.c settings.h control_ids.h globals.h enums.h\
  ../include/signs.h prefs.h show_battery.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
-${o}/dictionary.o: dictionary.c dictionary.h mem_ory.h control_ids.h\
+${o}/dict_header.o: dict_header.c dict_header.h control_ids.h\
  ../include/signs.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/mem_ory.o: mem_ory.c mem_ory.h ../include/signs.h

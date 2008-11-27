@@ -10,6 +10,7 @@
 #include<SysZLib.h>
 #include"zlib_error_alert.h"
 #include"mem_ory.h"
+#include"dict_header.h"
 enum local_constants
 {bits_per_byte=8,screen_width=160,screen_height=160,
  x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12,
@@ -23,52 +24,11 @@ draw_chars(const char*s,int x,int y)
  if(facunde>1)SysTaskDelay(50);
 }
 static unsigned long global_ticks;
-static unsigned*features,*record_size,*ary,*volumes,
- *vol,*ary_records,rec0_size,comment_size;
-static const char*db_comment;
-static DmOpenRef current_db;static MemHandle record0;
+static struct dict_header dh;
 static unsigned zlib_buf_size;static char*zlib_buf;
 const char*
-get_db_comment(int*size){if(size)*size=comment_size;return db_comment;}
-static int
-parse_header(int verbous)
-{char s[0x33];char*p;unsigned*up;int y=0,incy=11,i,j;
- record0=DmQueryRecord(current_db,0);
- if(!record0)return!0;p=MemHandleLock(record0);if(!p)return!0;
- rec0_size=MemPtrSize(p);
- up=(unsigned*)p;features=up;
- if(*features&~implemented_features_bits)
- {FrmAlert(Unimplemented_Alert_id);return!0;}
- if(*features&compression_bit&&!ZLibRef)
- {FrmAlert(No_Zlib_Alert_id);return!0;}
- record_size=up+1;ary=up+2;
- volumes=up+3;vol=up+4;ary_records=up+5;
- db_comment=(const char*)(ary_records+*ary+1);
- comment_size=rec0_size-(db_comment-p);
- if(!verbous)return 0;
- StrCopy(s,"Database ");j=StrLen(s);
- for(i=0;i<comment_size;i++,j++)
- {s[j]=db_comment[i];
-  if(s[j]=='\n')
-  {s[j]=0;WinDrawChars(s,StrLen(s),0,y);y+=incy;j=-1;}
- }
- if(db_comment[i-1]!='\n')
- {s[j]=0;WinDrawChars(s,StrLen(s),0,y);y+=incy;}
- StrCopy(s,"features: ");StrIToH(s+StrLen(s),*features);
- StrCat(s,"; arity: ");StrIToA(s+StrLen(s),*ary);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- StrCopy(s,"content record size: ");
- StrIToA(s+StrLen(s),*record_size);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- StrCopy(s,"volumes: ");StrIToA(s+StrLen(s),*volumes);
- StrCat(s,"; current volume: ");StrIToA(s+StrLen(s),*vol);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- for(i=0;i<=*ary;i++)
- {StrIToA(s,i);StrCat(s,"-ary records begin with ");
-  StrIToA(s+StrLen(s),ary_records[i]);
-  WinDrawChars(s,StrLen(s),0,y);y+=incy;
- }return 0;
-}MemHandle idx_handles[2];
+get_db_comment(int*size){if(size)*size=dh.comment_size;return dh.comment;}
+MemHandle idx_handles[2];
 static const char*uncompressed;char*indices[2];
 static unsigned current_article,current_content_record=1;
 struct cache_item
@@ -153,7 +113,7 @@ find_cache_item(unsigned rec_num)
   cache[idle_item].chunk.d=invalid_chunk_descriptor;
  }i=(idle_item+1)&cache_length_mask;
  while(i!=idle_item)
- {cache[idle_item].chunk=alloc_chunk(*record_size);
+ {cache[idle_item].chunk=alloc_chunk(dh.record_size);
   if(cache[idle_item].chunk.d>=0){cache_head=idle_item;break;}
   while(i!=idle_item)
   {int i_prev=i;i=(i+1)&cache_length_mask;
@@ -185,7 +145,7 @@ idx_items_num(void){return*((unsigned*)(indices[1])+1);}
 static const unsigned*
 idx_items_array(void){return((unsigned*)(indices[1]))+2;}
 static unsigned
-first_record(int arity){return ary_records[arity];}
+first_record(int arity){return dh.ary_records[arity];}
 static unsigned
 articles_number(void){return*((unsigned*)uncompressed);}
 static const char*
@@ -222,14 +182,11 @@ alloc_zlib_buf(void)
  if(!p)FrmAlert(Memory_Short_Alert_id);
  return p;
 }static void
-close_database(void)
-{free_indices();unlock_handle(&record0);
- if(current_db){DmCloseDatabase(current_db);current_db=0;}
-}
+close_database(void){free_indices();close_dict_header(&dh);}
 static int
 decompress_content(unsigned rec_num)
 {int cache_idx;
- if(!(*features&compression_bit)){uncompressed=*indices;return 0;}
+ if(!(dh.features&compression_bit)){uncompressed=*indices;return 0;}
  uncompressed=0;cache_idx=find_cache_item(rec_num);
  if(cache_idx<0)return!0;return 0;
 }static void
@@ -349,20 +306,20 @@ static int
 find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
  unsigned title_len;enum bisect_result r;char*t;int ret=0;
- unsigned long tic=TimGetTicks();if(!current_db)return!0;
+ unsigned long tic=TimGetTicks();if(!dh.db)return!0;
  if(!title||!*title)
  {current_article=0;current_content_record=first_record(0);
   if(*idx_handles)MemHandleUnlock(*idx_handles);
-  *indices=0;*idx_handles=DmQueryRecord(current_db,current_content_record);
+  *indices=0;*idx_handles=DmQueryRecord(dh.db,current_content_record);
   if(!*idx_handles)return!0;*indices=MemHandleLock(*idx_handles);
   if(!*indices)return!0;return decompress_content(current_content_record);
  }
  title_len=StrLen(title);t=MemPtrNew(title_len+1);
  if(!t)return-1;to_lower(t,title);
  unlock_handle(idx_handles+1);unlock_handle(idx_handles);
- *idx_handles=DmQueryRecord(current_db,first_record(*ary));
+ *idx_handles=DmQueryRecord(dh.db,first_record(dh.ary));
  *indices=MemHandleLock(*idx_handles);
- for(arity=*ary,try_next=0;arity>0;arity--)
+ for(arity=dh.ary,try_next=0;arity>0;arity--)
  {prev_lower=lower;
   {char s[0x33];StrCopy(s,"ary ");StrIToA(s+StrLen(s),arity);
    StrCat(s,"   ");draw_chars(s,0,0);
@@ -374,7 +331,7 @@ find_article(const char*title)
   {case more_than_plus:
     if(try_next)
     {MemHandle h=idx_handles[1];MemPtr ptr=indices[1];unsigned low,up;
-     idx_handles[1]=DmQueryRecord(current_db,
+     idx_handles[1]=DmQueryRecord(dh.db,
       idx_items_array()[(prev_lower+1)*3+1]);
      indices[1]=MemHandleLock(idx_handles[1]);
      r=bisect(t,title_len,&low,&up);
@@ -387,7 +344,7 @@ find_article(const char*title)
    case less_than_minus:/*??? rare case*/
    case bisect_returns_range:
     try_next=lower&bisect_try_next;lower&=~bisect_try_next;
-    *idx_handles=DmQueryRecord(current_db,idx_items_array()[lower*3+1]);
+    *idx_handles=DmQueryRecord(dh.db,idx_items_array()[lower*3+1]);
     *indices=MemHandleLock(*idx_handles);
     break;
    case bisect_error:/*this never occurs*/ret=-2;goto exit;
@@ -401,7 +358,7 @@ find_article(const char*title)
   &&current_content_record+1<first_record(1))
  {MemHandle h=*idx_handles;MemPtr ptr=*indices;int cmp;const unsigned*items;
   save_uncompressed();
-  *idx_handles=DmQueryRecord(current_db,current_content_record+1);
+  *idx_handles=DmQueryRecord(dh.db,current_content_record+1);
   *indices=MemHandleLock(*idx_handles);
   /*TODO test if there are 0 articles in the record*/
   if(decompress_content(current_content_record+1))
@@ -416,7 +373,7 @@ find_article(const char*title)
    cmp=compare_item(title,given,title_len);
    if(cmp)
    {MemHandle h0=*idx_handles;*idx_handles=h;h=h0;
-    if(compression_bit&*features)restore_uncompressed();
+    if(compression_bit&dh.features)restore_uncompressed();
     *indices=ptr;
    }else{current_content_record++;current_article=0;}
    discard_saved_uncompressed();MemHandleUnlock(h);draw_chars(given,0,91);
@@ -441,11 +398,6 @@ free_database_handles(void)
  {int i;for(i=0;i<databases_num;i++)MemPtrFree(database_handles[i]);
   MemPtrFree(database_handles);database_handles=0;databases_num=0;
  }
-}
-static void
-clr_scrn(void)
-{static struct RectangleType r={{0,0},{160,160}};
- WinEraseRectangle(&r,0);
 }static int
 list_databases(void)
 {int n=0;DmSearchStateType ss;UInt16 card;LocalID id;
@@ -455,10 +407,7 @@ list_databases(void)
   return n;
  do
  {struct db_name_chain*new_head;
-  if(current_db)DmCloseDatabase(current_db);
-  current_db=DmOpenDatabase(0,id,dmModeReadOnly);
-  if(!current_db)break;
-  clr_scrn();if(parse_header(!0))continue;
+  if(load_dict_header(&dh,card,id))continue;
   n++;new_head=MemPtrNew(sizeof*new_head);
   if(new_head)
   {struct database_handle*h=MemPtrNew(sizeof*h);
@@ -468,8 +417,7 @@ list_databases(void)
     DmDatabaseInfo(card,id,h->name,0,0, 0,0,0, 0,0,0, 0,0);
     h->name[sizeof(h->name)-1]=0;
    }else MemPtrFree(new_head);
-  }
-  MemHandleUnlock(record0);DmCloseDatabase(current_db);current_db=0;
+  }close_dict_header(&dh);
  }while(!DmGetNextDatabaseByTypeCreator(0,&ss,
           DB_TYPE,CREATOR,0,&card,&id));
  if(databases_num)
@@ -486,12 +434,9 @@ load_database(int index)
  {char s[17],t[17];StrIToA(s,index);StrIToA(t,databases_num);
   FrmCustomAlert(Db_Index_Out_of_Range_Alert_id,s,t," ");
   return!0;
- }
- if(current_db)close_database();
- current_db=DmOpenDatabase(database_handles[index]->card,
-  database_handles[index]->id,dmModeReadOnly);
- if(!current_db){FrmAlert(Fail_Opening_Alert_id);return!0;}
- if(parse_header(0)){close_database();return!0;}
+ }if(dh.db)close_database();
+ if(load_dict_header(&dh,
+     database_handles[index]->card,database_handles[index]->id))return!0;
  db_idx=index;current_content_record=first_record(0);return 0;
 }
 static void
@@ -540,7 +485,7 @@ show_article(void)
   width=screen_width-x0,xb;
  MemHandle rec=*idx_handles;MemPtr ptr=*indices;
  int saved=0;unsigned long tic=TimGetTicks();
- if(!current_db)return;
+ if(!dh.db)return;
  if(facunde)
  {char s[0x33];StrIToA(s,current_content_record);StrCat(s,":");
   StrIToA(s+StrLen(s),current_article);StrCat(s,":");
@@ -554,7 +499,7 @@ show_article(void)
    art_num=0;cur_rec++;
    if(!saved){saved=!0;save_uncompressed();}
    else MemHandleUnlock(*idx_handles);
-   *idx_handles=DmQueryRecord(current_db,cur_rec);
+   *idx_handles=DmQueryRecord(dh.db,cur_rec);
    *indices=MemHandleLock(*idx_handles);
    if(decompress_content(cur_rec))break;
   }
@@ -620,7 +565,7 @@ goto_form(int id)
 void_handler(EventType*e){return 0;}
 static int
 show_next_article(int increment)
-{if(!current_db)return!0;if(!increment){show_article();return 0;}
+{if(!dh.db)return!0;if(!increment){show_article();return 0;}
  if(increment<0)
  {increment=-increment;
   if(current_article<increment)
@@ -628,7 +573,7 @@ show_next_article(int increment)
    if(current_content_record==first_record(0))
     current_content_record=first_record(1)-1;
    else--current_content_record;
-   *idx_handles=DmQueryRecord(current_db,current_content_record);
+   *idx_handles=DmQueryRecord(dh.db,current_content_record);
    *indices=MemHandleLock(*idx_handles);
    if(decompress_content(current_content_record))return!0;
    if(articles_number()<=increment)current_article=0;
@@ -641,7 +586,7 @@ show_next_article(int increment)
    if(current_content_record+1>=first_record(1))
    {current_content_record=first_record(0);
    }else current_content_record++;
-   *idx_handles=DmQueryRecord(current_db,current_content_record);
+   *idx_handles=DmQueryRecord(dh.db,current_content_record);
    *indices=MemHandleLock(*idx_handles);
    if(decompress_content(current_content_record))return!0;
    current_article=current_article+increment-n;
@@ -657,7 +602,7 @@ void
 skip_next_redraw(void){skip_main_form_redraw=!0;}
 static void
 on_enter_main_form(void)
-{const char*s0=StrChr(db_comment,'\n')+1;int field_idx;static int vex;
+{const char*s0=StrChr(dh.comment,'\n')+1;int field_idx;static int vex;
  FrmDrawForm(form);show_battery(!0);
  clr_status_line();
  if(!vex)
