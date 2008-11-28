@@ -53,8 +53,8 @@ ${o}/show_battery.o: show_battery.c show_battery.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/prefs.o: prefs.c prefs.h globals.h ../include/signs.h enums.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
-${o}/settings.o: settings.c settings.h control_ids.h globals.h enums.h\
- ../include/signs.h prefs.h show_battery.h
+${o}/settings.o: settings.c settings.h ../include/signs.h\
+ control_ids.h dict_header.h globals.h enums.h prefs.h show_battery.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/dict_header.o: dict_header.c dict_header.h control_ids.h\
  ../include/signs.h

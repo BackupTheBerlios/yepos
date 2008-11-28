@@ -17,6 +17,8 @@
 #define Internal_Error_Str_id			(4897)
 #define Fail_Opening_Alert_id			(4896)
 #define Db_Index_Out_of_Range_Alert_id		(4895)
+#define Dictionary_No_Str_id			(4894)
+#define Db_Features_Str_id			(4893)
 #define Dictionary_Pushbutton_First_id		(3400)
 #define Dictionary_Pushbuttons_number		(5)
 #define Dictionary_Pushbutton_Last_id		(Dictionary_Pushbutton_First_id+Dictionary_Pushbuttons_number-1)

@@ -36,4 +36,6 @@ BEGIN
 "#dictionary" = "Dictionary"
 "#ok" = "OK"
 "#cancel" = "Cancel"
+"#Dictionary No" = "Dictionary No: "
+"#Db features" = "features: "
 END

@@ -1,12 +1,15 @@
 #include<PalmOS.h>/*yepos the PalmOS dictionary: settings form functions*/
+#include"../include/signs.h"
 #include"settings.h"
 #include"control_ids.h"
+#include"dict_header.h"
 #include"enums.h"
 #include"globals.h"
-#include"../include/signs.h"
 #include"prefs.h"
 #include"show_battery.h"
-static int upper_db,selected,change_flag;
+enum local_constants{info_line_inc=4};
+static int upper_db,selected,change_flag,info_line_no,comment_top_reached;
+static struct dict_header dh;
 static void
 show_buttons(FormType*f)
 {int n,m,i,i0=0;struct database_handle**h;
@@ -31,31 +34,71 @@ show_buttons(FormType*f)
   ControlType*b=FrmGetObjectPtr(f,idx);CtlSetLabel(b,"...");
   CtlSetValue(b,0);
  }
+}static int
+load_selected_header(void)
+{int n;struct database_handle**h=get_database_list(&n);
+ if(selected>n)return!0;if(dh.db)close_dict_header(&dh);
+ return load_dict_header(&dh,h[selected]->card,h[selected]->id);
+}static void
+draw_tail(int visible,int y)
+{if(visible)WinDrawChars("...",3,0,y);
+ else WinDrawChars("      ",6,0,y);
+}static int
+draw_resource_string(int id,int x,int y)
+{MemHandle mh=DmGetResource('tSTR',id);const char*s;
+ if(!mh)return!0;s=MemHandleLock(mh);if(!s)return!0;
+ WinDrawChars(s,StrLen(s),0,y);MemHandleUnlock(mh);return 0;
+}static int
+comment_area_top(void)
+{int n;get_database_list(&n);if(n>5)n=5;return 12+n*14;}
+static void
+clr_db_comment(void)
+{static struct RectangleType r={{0,0},{screen_width,0}};
+ int y;y=comment_area_top()+1;
+ r.topLeft.y=y;r.extent.y=137-y;WinEraseRectangle(&r,0);
 }static void
 show_selected_database(FormType*f)
-{int n,i,y,comment_size,incy=12;
- const char*comment=get_db_comment(&comment_size);
- get_database_list(&n);if(n>5)n=5;y=12+n*14;
+{int i,y,comment_size,incy=11,max_y=130,line=0;
+ const char*comment;y=comment_area_top();
+ if(info_line_no<=line)
+ {if(!draw_resource_string(Dictionary_No_Str_id,0,y))
+  {char s[17];StrIToA(s,selected);WinDrawChars(s,StrLen(s),100,y);
+   y+=incy;
+  }
+ }line++;
+ if(info_line_no<=line)
+ {if(!draw_resource_string(Db_Features_Str_id,0,y))
+  {char s[17];StrIToH(s,dh.features);s[3]='x';
+   WinDrawChars(s+2,6,100,y);y+=incy;
+  }
+ }line++;
+ comment=dh.comment;comment_size=dh.comment_size;
  for(i=0;0<comment_size;i++)
  {if(comment[i]=='\n'||i==comment_size)
-  {WinDrawChars(comment,i,0,y);y+=incy;
+  {if(line++>=info_line_no)
+   {WinDrawChars(comment,i,0,y);y+=incy;}
    comment+=i+1;comment_size-=i+1;i=-1;
-  }if(y>130)break;
- }
+  }if(y>max_y)break;
+ }draw_tail(comment_size>0,135);comment_top_reached=comment_size<=0;
+}static void
+return_from_settings(void)
+{if(!change_flag)skip_next_redraw();
+ if(dh.db)close_dict_header(&dh);at_close_app(0);goto_form(MainForm_id);
 }static void
 on_enter(void)
 {FormType*f;unsigned long tic=TimGetTicks();
  f=get_current_form();selected=get_current_db_idx();
  show_buttons(f);FrmDrawForm(f);show_battery(!0);
- show_selected_database(f);
+ at_close_app(return_from_settings);
+ if(!load_selected_header())show_selected_database(f);
  {char s[17];StrIToA(s,TimGetTicks()-tic);
-  WinDrawChars(s,StrLen(s),160-StrLen(s)*5-2,-2);
- }change_flag=0;
+  WinDrawChars(s,StrLen(s),screen_width-StrLen(s)*5-2,-2);
+ }change_flag=info_line_no=0;
 }static int
 process_push(int n)
 {FormType*f=get_current_form();UInt16 idx;ControlType*b;
  int db_num,i;get_database_list(&db_num);
- n-=Dictionary_Pushbutton_First_id;
+ n-=Dictionary_Pushbutton_First_id;if(upper_db+n==selected)return 0;
  if(upper_db&&!n)
  {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id);
   b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
@@ -79,14 +122,26 @@ process_push(int n)
  {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id+i);
   b=FrmGetObjectPtr(f,idx);CtlSetValue(b,i==n);
  }selected=upper_db+n;
+ if(!load_selected_header())
+ {info_line_no=0;clr_db_comment();show_selected_database(f);}
  return 0;
-}static void
-return_from_settings(void)
-{if(!change_flag)skip_next_redraw();goto_form(MainForm_id);}
-Boolean
+}static int
+process_pendown(int x,int y)
+{int y0=comment_area_top(),y1=135;if((y>y1&&x>50)||y<y0)return 0;
+ if(y>(y1+y0)/2)
+ {if(!comment_top_reached)
+  {info_line_no+=info_line_inc;clr_db_comment();
+   show_selected_database(get_current_form());
+  }
+ }else if(info_line_no)
+ {info_line_no-=info_line_inc;if(info_line_no<0)info_line_no=0;
+  clr_db_comment();show_selected_database(get_current_form());
+ }return!0;
+}Boolean
 settings_form_handler(EventType*e)
 {switch(e->eType)
  {case frmOpenEvent:on_enter();break;
+  case penDownEvent:return process_pendown(e->screenX,e->screenY);
   case ctlSelectEvent:
    switch(e->data.ctlSelect.controlID)
    {case OK_Button_id:

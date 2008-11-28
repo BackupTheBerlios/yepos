@@ -66,3 +66,5 @@ Begin Title "#yepos error"
  Message "#db idx out of range"
  Buttons "#Close itself"
 End
+String Dictionary_No_Str_id "#Dictionary No"
+String Db_Features_Str_id "#Db features"

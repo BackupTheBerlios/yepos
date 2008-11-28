@@ -36,4 +36,6 @@ BEGIN
 "#dictionary" = "Словарь"
 "#ok" = "Так"
 "#cancel" = "Отбой"
+"#Dictionary No" = "Номер словаря: "
+"#Db features" = "конфигурация: "
 END

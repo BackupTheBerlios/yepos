@@ -12,7 +12,7 @@
 #include"mem_ory.h"
 #include"dict_header.h"
 enum local_constants
-{bits_per_byte=8,screen_width=160,screen_height=160,
+{bits_per_byte=8,
  x0=0,y0=11,status_line_y=-2,articles_height=screen_height-y0-12,
  log2_cache_length=4,cache_length=1<<log2_cache_length,
  cache_length_mask=cache_length-1,list_mode_inc_value=7
@@ -719,10 +719,14 @@ event_loop(void)
   if(SysHandleEvent(&e))continue;if(e.eType==appStopEvent)break;
   if(app_handle_event(&e))continue;FrmDispatchEvent(&e);show_battery(0);
  }
-}static void
+}static void(*on_close_current_form)(void);
+void
+at_close_app(void(*func)(void)){on_close_current_form=func;}
+static void
 close_all(void)
 {if(current_form!=MainForm_id)
  {FrmEraseForm(form);FrmDeleteForm(form);
+  if(on_close_current_form)on_close_current_form();
   form=FrmGetFormPtr(MainForm_id);
  }
  if(form)
