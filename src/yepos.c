@@ -303,11 +303,12 @@ discard_saved_uncompressed(void){saved_uncompressed=0;}
 static int
 restore_uncompressed(void)
 {uncompressed=saved_uncompressed;saved_uncompressed=0;return 0;}
+static unsigned last_line_shown,first_line_shown;
 static int
 find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
  unsigned title_len;enum bisect_result r;char*t;int ret=0;
- unsigned long tic=TimGetTicks();if(!dh.db)return!0;
+ unsigned long tic=TimGetTicks();if(!dh.db)return!0;last_line_shown=0;
  if(!title||!*title)
  {current_article=0;current_content_record=first_record(0);
   if(*idx_handles)MemHandleUnlock(*idx_handles);
@@ -471,64 +472,92 @@ chars_in_width(const char*s,int width,int*wd,int*f)
 {Int16 w=width,l=StrLen(s);Boolean fit;
  FntCharsInWidth(s,&w,&l,&fit);if(wd)*wd=w;if(f)*f=fit;return l;
 }static int
+reverse_font_word_wrap(const char*s0,int limit,int*wd,int m)
+{char s[0x55];int f,n,m1=0;const char*p;
+ while(!delimiter(*s0)){s0++;m1++;}
+ if(m>sizeof s-1)m=sizeof s-1;
+ s[m]=0;for(m--;m>=0;m--)s[m]=s0[-1-m];
+ n=chars_in_width(s,limit,wd,&f);if(f||!n)return n;
+ for(p=s+n-1;!delimiter(*p)&&p!=s;p--);
+ if(p==s)return n;n=p-s+1;
+ if(wd)*wd=FntCharsWidth(s,s[n-1]?n:n-1);return n;
+}static int
 font_word_wrap(const char*s,int limit,int*wd)
 {int f,n=chars_in_width(s,limit,wd,&f);const char*p;
  if(f||!n)return n;
  for(p=s+n-1;!delimiter(*p)&&p!=s;p--);
  if(p==s)return n;n=p-s+1;
  if(wd)*wd=FntCharsWidth(s,s[n-1]?n:n-1);return n;
-}
-static void
+}static int
+check_record_limit(unsigned*cur_rec,unsigned*art_num,int*saved)
+{if(*art_num>=articles_number())
+ {if(*cur_rec+1>=first_record(1))return!0;
+  *art_num=0;(*cur_rec)++;
+  if(!*saved){*saved=!0;save_uncompressed();}
+  else MemHandleUnlock(*idx_handles);
+  *idx_handles=DmQueryRecord(dh.db,*cur_rec);
+  *indices=MemHandleLock(*idx_handles);
+  if(decompress_content(*cur_rec))return!0;
+ }return 0;
+}static void
+list_articles(unsigned*cur_rec,unsigned*art_num,int*saved)
+{int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,width;
+ while(y<=y_max)
+ {const char*art;if(check_record_limit(cur_rec,art_num,saved))break;
+  width=screen_width-x0;x=x0;
+  art=article_ptr((*art_num)++);WinDrawChars(art,StrLen(art),x,y);
+  x+=FntCharsWidth(art,StrLen(art));mark_article_body(x,y,dy);
+  art+=StrLen(art)+2;art+=StrLen(art)+1;x+=4;width-=4;
+  if(x>=screen_width){y+=dy;continue;}width-=x;
+  {int wd;n=chars_in_width(art,width,&wd,0);
+   WinDrawChars(art,art[n-1]?n:n-1,x,y);
+   n0+=n;y+=dy;art+=n;
+  }
+ }last_line_shown=0;
+}static void
 show_article(void)
 {unsigned art_num=current_article,cur_rec=current_content_record,
   article_marked=!0;
  int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,
-  width=screen_width-x0,xb;
+  width=screen_width-x0,xb,vex=0;
  MemHandle rec=*idx_handles;MemPtr ptr=*indices;
  int saved=0;unsigned long tic=TimGetTicks();
- if(!dh.db)return;
+ if(!dh.db)return;first_line_shown=last_line_shown;
  if(facunde)
  {char s[0x33];StrIToA(s,current_content_record);StrCat(s,":");
   StrIToA(s+StrLen(s),current_article);StrCat(s,":");
   StrIToA(s+StrLen(s),articles_number());StrCat(s,":");
   draw_chars(s,0,0);
  }clr_articles();x=x0;
- while(y<y_max)/*TODO show long articles appropriately*/
- {const char*art;
-  if(art_num>=articles_number())
-  {if(cur_rec+1>=first_record(1))break;
-   art_num=0;cur_rec++;
-   if(!saved){saved=!0;save_uncompressed();}
-   else MemHandleUnlock(*idx_handles);
-   *idx_handles=DmQueryRecord(dh.db,cur_rec);
-   *indices=MemHandleLock(*idx_handles);
-   if(decompress_content(cur_rec))break;
+ if(list_mode)list_articles(&cur_rec,&art_num,&saved);
+ else while(y<=y_max)
+ {const char*art,*art0;if(check_record_limit(&cur_rec,&art_num,&saved))break;
+  art0=article_ptr(art_num++);art=art0+last_line_shown;
+  if(!last_line_shown)
+  {WinDrawChars(art,StrLen(art),x,y);
+   x+=FntCharsWidth(art,StrLen(art));art+=StrLen(art)+1;
+   WinDrawChars(art,1,x,y);x+=FntCharsWidth(art++,1);
+   if(x<screen_width)width-=x;else
+   {if(article_marked){separate_articles(y);article_marked=!0;}
+    y+=dy;if(y>y_max)break;x=0;
+   }
+   do
+   {int wd;n=font_word_wrap(art,width,&wd);
+    WinDrawChars(art,art[n-1]?n:n-1,x,y);
+    if(!article_marked){separate_articles(y);article_marked=!0;}
+    width=screen_width;n0+=n;y+=dy;last_line_shown=art-art0;
+    xb=x+FntCharsWidth(art,art[n-1]?n:n-1);x=x0;art+=n;
+   }while(*art&&y<=y_max);
+   if(!*art)mark_article_body(xb,y-dy,dy);
+   if(vex||!*art)last_line_shown=0;
+   if(y>y_max)break;art++;
   }
-  art=article_ptr(art_num++);
-  WinDrawChars(art,StrLen(art),x,y);
-  x+=FntCharsWidth(art,StrLen(art));art+=StrLen(art)+1;
-  if(!list_mode){WinDrawChars(art,1,x,y);x+=FntCharsWidth(art++,1);}
-  else{art++;art+=StrLen(art)+1;}
-  if(list_mode){mark_article_body(x,y,dy);x+=4;width-=4;}
-  if(x<screen_width)width-=x;else
-  {if(!(article_marked||list_mode)){separate_articles(y);article_marked=!0;}
-   y+=dy;if(y>y_max)break;if(!list_mode)x=0;
-  }
-  do
-  {int wd;
-   n=list_mode?chars_in_width(art,width,&wd,0):font_word_wrap(art,width,&wd);
-   WinDrawChars(art,art[n-1]?n:n-1,x,y);
-   if(!article_marked){separate_articles(y);article_marked=!0;}
-   width=screen_width;n0+=n;y+=dy;
-   xb=x+FntCharsWidth(art,art[n-1]?n:n-1);x=x0;art+=n;
-  }while(*art&&y<y_max&&!list_mode);
-  if(y>y_max)break;if(list_mode)continue;
-  mark_article_body(xb,y-dy,dy);art++;
   do
   {n=font_word_wrap(art,width,0);
    WinDrawChars(art,art[n-1]?n:n-1,x,y);
-   y+=dy;n0+=n;x=x0;art+=n;
-  }while(*art&&y<y_max);article_marked=0;
+   y+=dy;n0+=n;x=x0;last_line_shown=art-art0;art+=n;
+  }while(*art&&y<=y_max);article_marked=0;
+  if(vex||!*art)last_line_shown=0;vex=!0;
  }
  if(saved)
  {unlock_handle(idx_handles);*idx_handles=rec;*indices=ptr;
@@ -575,9 +604,24 @@ goto_form(int id)
 void_handler(EventType*e){return 0;}
 static int
 show_next_article(int increment)
-{if(!dh.db)return!0;if(!increment){show_article();return 0;}
- if(increment<0)
- {increment=-increment;
+{if(!dh.db)return!0;
+ if(!list_mode&&!last_line_shown&&first_line_shown&&increment<0)
+  first_line_shown=increment=0;
+ if(!increment)
+ {last_line_shown=first_line_shown;show_article();return 0;}
+ if(last_line_shown&&!list_mode&&!(increment<0&&!first_line_shown))
+ {if(increment<0)
+  {const char*art0=article_ptr(current_article),*art=art0+first_line_shown,*b;
+   int line,n,dy=11,first_line;
+   b=art0+StrLen(art0)+1;b+=StrLen(b)+1;first_line=b-art0;
+   for(line=0;line<articles_height/dy-1;line++)
+   {n=reverse_font_word_wrap(art,screen_width-x0,0,first_line_shown-first_line);
+    if(first_line_shown>n+first_line){first_line_shown-=n;art-=n;}
+    else{first_line_shown=0;break;}
+   }last_line_shown=first_line_shown;
+  }
+ }else if(increment<0)
+ {increment=-increment;last_line_shown=0;
   if(current_article<increment)
   {MemHandleUnlock(*idx_handles);
    if(current_content_record==first_record(0))
