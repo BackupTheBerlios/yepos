@@ -5,10 +5,8 @@ it's primary features are:
 (0) RMS-sense freedom, you can use and distribute it under
     the terms of the GNU GPLv3+
 (1) it is older devices-oriented:
-    it runs on PalmOS 2.0 (probably slower than desired when running
-    through compressed databases with large content records);
-    on PalmOS 3.0 and later without restrictions;
-    Palm IIIxe shall run it quite fluently;
+    it runs on PalmOS 2.0 devices with 16 MHz DragonBall quite fluently
+    (unfortunately, they can't bear any really large dictionary);
     generally, one of the most important goals is to to minimise
     the power consumption;
     it is written with badly adjusted digitizer in mind
