@@ -127,7 +127,7 @@ process_push(int n)
  return 0;
 }static int
 process_pendown(int x,int y)
-{int y0=comment_area_top(),y1=135;if((y>y1&&x>50)||y<y0)return 0;
+{int y0=comment_area_top(),y1=135;if((y>y1&&x>20)||y<y0)return 0;
  if(y>(y1+y0)/2)
  {if(!comment_top_reached)
   {info_line_no+=info_line_inc;clr_db_comment();
@@ -150,6 +150,7 @@ settings_form_handler(EventType*e)
      return_from_settings();break;
     case Cancel_Button_id:
      return_from_settings();break;
+    case About_Button_id:FrmHelp(About_Str_id);break;
     default:
      if(e->data.ctlSelect.controlID>=Dictionary_Pushbutton_First_id
         &&e->data.ctlSelect.controlID<=Dictionary_Pushbutton_Last_id)

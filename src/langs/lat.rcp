@@ -36,6 +36,13 @@ BEGIN
 "#dictionary" = "Vocabularium"
 "#ok" = "Sic"
 "#cancel" = "Veto"
+"#about" = "de me"
 "#Dictionary No" = "Vocabularii No: "
 "#Db features" = "insignia: "
+"#yepos is a free program" = "yepos programma liberum est; "\
+ "id atque redistribui "\
+ "atque mutari licet sub conditionibus GNU Licensionis Publici Generali "\
+ "(GNU GPL), ut edita est a Fundatione Programmatorum Liberorum "\
+ "(Free Software Foundation), aut versus tertii (3), aut (sicut vis) ulli "\
+ "posteriori versus"
 END

@@ -1,3 +1,4 @@
+/*yepos the PalmOS dictionary program: named resources ids*/
 #define MainForm_id				(4913)
 #define FindButton_id				(4912)
 #define LookupField_id				(4911)
@@ -19,8 +20,24 @@
 #define Db_Index_Out_of_Range_Alert_id		(4895)
 #define Dictionary_No_Str_id			(4894)
 #define Db_Features_Str_id			(4893)
+#define About_Button_id				(4892)
+#define About_Str_id				(4891)
 #define Dictionary_Pushbutton_First_id		(3400)
 #define Dictionary_Pushbuttons_number		(5)
 #define Dictionary_Pushbutton_Last_id		(Dictionary_Pushbutton_First_id+Dictionary_Pushbuttons_number-1)
 #define OK_Button_id				(5100)
 #define Cancel_Button_id			(5099)
+/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+
+yepos is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.*/
