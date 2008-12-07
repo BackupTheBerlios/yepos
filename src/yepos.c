@@ -500,6 +500,10 @@ check_record_limit(unsigned*cur_rec,unsigned*art_num,int*saved)
   if(decompress_content(*cur_rec))return!0;
  }return 0;
 }static void
+draw_ellipses(int y)
+{int x=screen_width-1,dy=11;
+ WinDrawPixel(x,y+2);WinDrawPixel(x,y+dy/2);WinDrawPixel(x,y+dy-3);
+}static void
 list_articles(unsigned*cur_rec,unsigned*art_num,int*saved)
 {int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,width;
  while(y<=y_max)
@@ -511,7 +515,7 @@ list_articles(unsigned*cur_rec,unsigned*art_num,int*saved)
   if(x>=screen_width){y+=dy;continue;}width-=x;
   {int wd;n=chars_in_width(art,width,&wd,0);
    WinDrawChars(art,art[n-1]?n:n-1,x,y);
-   n0+=n;y+=dy;art+=n;
+   n0+=n;art+=n;if(*art)draw_ellipses(y);y+=dy;
   }
  }last_line_shown=0;
 }static void
@@ -548,7 +552,7 @@ show_article(void)
    }while(*art&&y<=y_max);
    if(!*art)mark_article_body(xb,y-dy,dy);
    if(vex||!*art)last_line_shown=0;
-   if(y>y_max)break;art++;
+   if(y>y_max){draw_ellipses(y-dy);break;}art++;
   }
   do
   {n=font_word_wrap(art,width,0);
@@ -556,7 +560,9 @@ show_article(void)
    y+=dy;n0+=n;x=x0;last_line_shown=art-art0;art+=n;
   }while(*art&&y<=y_max);article_marked=0;
   if(vex||!*art)last_line_shown=0;vex=!0;
+  if(y>y_max&&*art)draw_ellipses(y-dy);
  }
+ if(first_line_shown&&!list_mode)draw_ellipses(y0);
  if(saved)
  {unlock_handle(idx_handles);*idx_handles=rec;*indices=ptr;
   restore_uncompressed();
