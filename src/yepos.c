@@ -732,7 +732,7 @@ main_form_handler(EventType*e)
    if(e->screenY>=y0+articles_height||e->screenY<=y0)return 0;
    if(ch_shown)draw_crosshair(crosshair_x,crosshair_y);
    {int dy=11,y=e->screenY-y0,inc;
-    inc=y/dy;list_mode--;show_next_article(inc);
+    inc=y/dy;list_mode--;if(!list_mode)show_next_article(inc);
    }break;
   case penDownEvent:
    if(e->screenY<y0+articles_height&&(e->screenY>y0))
