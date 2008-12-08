@@ -502,7 +502,8 @@ check_record_limit(unsigned*cur_rec,unsigned*art_num,int*saved)
 }static void
 draw_ellipses(int y)
 {int x=screen_width-1,dy=11;
- WinDrawPixel(x,y+2);WinDrawPixel(x,y+dy/2);WinDrawPixel(x,y+dy-3);
+ WinDrawLine(x,y+2,x,y+2);WinDrawLine(x,y+dy/2,x,y+dy/2);
+ WinDrawLine(x,y+dy-3,x,y+dy-3);
 }static void
 list_articles(unsigned*cur_rec,unsigned*art_num,int*saved)
 {int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,width;
