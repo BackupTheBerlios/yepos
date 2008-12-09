@@ -589,7 +589,7 @@ show_article(void)
  if(art_num<list_mode_inc_value&&(dh.features&compression_bit))
  {unsigned rn=cur_rec;MemHandle h=*idx_handles;MemPtr p=*indices;
   save_uncompressed();
-  if(rn<1)rn=first_record(1)-1;else rn--;
+  if(rn<=first_record(0))rn=first_record(1)-1;else rn--;
   *idx_handles=DmQueryRecord(dh.db,rn);
   if(*idx_handles)
   {*indices=MemHandleLock(*idx_handles);
