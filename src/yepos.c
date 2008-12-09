@@ -60,7 +60,8 @@ inflate_into_chunk(struct mem_chunk m)
   while(decompressed<orig_size)
   {unsigned n;str.next_out=zlib_buf;str.avail_out=zlib_buf_size;
    err=inflate(&str,0);
-   if(err&&err!=Z_STREAM_END){zlib_error_alert(err,"inflate");return err;}
+   if(err&&err!=Z_STREAM_END)
+   {zlib_error_alert(err,"inflate");inflateEnd(&str);return err;}
    n=zlib_buf_size-str.avail_out;
    write_chunk(m,decompressed,zlib_buf,n);decompressed+=n;
   }while(err!=Z_STREAM_END);
