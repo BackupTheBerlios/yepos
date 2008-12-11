@@ -21,18 +21,12 @@ it's primary features are:
     scrolled like in Weasel with tap on upper/lower half of the screen;
     no form titles, no fancy buttons, no other non-functional decorations
 
-In current alpha state some essential features are yet to be
-implemented:
-(0) proper articles output:
-   (a) more modes (grammatical marks on/off, font/colour selections)
-   (b) show full contents of long articles
-
 Some not so important features that are also planned:
 (0) reverse search (in articles bodies rather than in their titles)
 (1) transliteration both for search input and sorting
 (2) databases in memory cards as well as in Palm RAM
 
-Not planned in foreseeable future:
+Not planned neither in foreseeable future, nor later:
 (0) multibyte encodings support
 
 There are other free dictionary programs available for PalmOS.
