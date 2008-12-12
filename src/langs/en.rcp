@@ -1,6 +1,6 @@
 TRANSLATION "en"
 BEGIN
-"#Version" = "pre-0.1 en"
+"#Version" = YEPOS_VERSION_STRING" en"
 "#yepos" = "yepos"
 "#find" = "Find"
 "#ZLib error" = "ZLib error"
@@ -39,7 +39,8 @@ BEGIN
 "#about" = "about"
 "#Dictionary No" = "Dictionary No: "
 "#Db features" = "features: "
-"#yepos is a free program" = "yepos is free software; you can redistribute "\
+"#yepos is a free program" = "yepos "\
+ YEPOS_VERSION_STRING" is free software; you can redistribute "\
  "it and/or modify "\
  "it under the terms of the GNU General Public License as published by "\
  "the Free Software Foundation; either version 3 of the License, or "\

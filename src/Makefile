@@ -4,6 +4,7 @@ CC = m68k-palmos-gcc
 LD = m68k-palmos-gcc
 CPPFLAGS = -I../extern -I. -DNEWGCC
 CFLAGS = -Wall -O2
+yepos_version=pre-0.1
 #whether to build executables for all languages (not only Latin)
 BUILD_LANGS=0
 #whether to build test prcs
@@ -26,7 +27,7 @@ all: ${Macul}/dirs.stamp ${PRC}
 .SECONDARY:$(foreach lang,$(Lang),$(Macul)/$(lang)/$(TARGET).rcp\
  $(Macul)/$(lang)/bin.stamp)
 ${Macul}/%/${TARGET}.rcp:langs/%.rcp ${TARGET}.rcp.in
-	cat $^>$@
+	cat $^|sed "s/\<YEPOS_VERSION_STRING\>[^\"]*\"/\"${yepos_version}/">$@
 clean:
 	rm -fr $(DIRS)
 DIRS =${bin} ${o} $(Macul) $(foreach lang, $(Lang), $(Macul)/$(lang))

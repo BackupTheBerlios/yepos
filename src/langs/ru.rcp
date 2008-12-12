@@ -1,6 +1,6 @@
 TRANSLATION "ru"
 BEGIN
-"#Version" = "pre-0.1 ru"
+"#Version" = YEPOS_VERSION_STRING" ru"
 "#yepos" = "yepos"
 "#find" = "Найди"
 "#ZLib error" = "Ошибка ZLib"
@@ -39,7 +39,8 @@ BEGIN
 "#about" = "обо мне"
 "#Dictionary No" = "Номер словаря: "
 "#Db features" = "конфигурация: "
-"#yepos is a free program" = "yepos -- вольная программа; её можно "\
+"#yepos is a free program" = "yepos "\
+ YEPOS_VERSION_STRING" -- вольная программа; её можно "\
  "как передавать, так и править на условиях Общей общественной лицензии "\
  "ГНU (GNU GPL) "\
  "в том виде, в каком лицензия издана Фондом вольных программ "\
