@@ -98,7 +98,10 @@ on_enter(void)
 process_push(int n)
 {FormType*f=get_current_form();UInt16 idx;ControlType*b;
  int db_num,i;get_database_list(&db_num);
- n-=Dictionary_Pushbutton_First_id;if(upper_db+n==selected)return 0;
+ n-=Dictionary_Pushbutton_First_id;
+ if(upper_db+n==selected&&(n||!upper_db)
+    &&(upper_db+Dictionary_Pushbuttons_number>db_num))
+  return 0;
  if(upper_db&&!n)
  {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id);
   b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
