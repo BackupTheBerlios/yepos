@@ -86,8 +86,13 @@ return_from_settings(void)
  if(dh.db)close_dict_header(&dh);at_close_app(0);goto_form(MainForm_id);
 }static void
 on_enter(void)
-{FormType*f;unsigned long tic=TimGetTicks();
- f=get_current_form();selected=get_current_db_idx();
+{FormType*f;unsigned long tic=TimGetTicks();int n;
+ f=get_current_form();selected=get_current_db_idx();get_database_list(&n);
+ if(n>Dictionary_Pushbuttons_number&&selected>Dictionary_Pushbuttons_number-1)
+ {upper_db=selected-Dictionary_Pushbuttons_number/2;
+  if(upper_db+Dictionary_Pushbuttons_number>n)
+   upper_db=n-Dictionary_Pushbuttons_number;
+ }
  show_buttons(f);FrmDrawForm(f);show_battery(!0);
  at_close_app(return_from_settings);
  if(!load_selected_header())show_selected_database(f);
