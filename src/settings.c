@@ -10,29 +10,29 @@
 enum local_constants{info_line_inc=4};
 static int upper_db,selected,change_flag,info_line_no,comment_top_reached;
 static struct dict_header dh;
+static ControlType*
+get_control_ptr(FormType*f,int id)
+{return FrmGetObjectPtr(f,FrmGetObjectIndex(f,id));}
 static void
 show_buttons(FormType*f)
-{int n,m,i,i0=0;struct database_handle**h;
- h=get_database_list(&n);
- m=Dictionary_Pushbuttons_number;
+{int n,m,i=0;struct database_handle**h;ControlType*b;
+ h=get_database_list(&n);n-=upper_db;
+ m=Dictionary_Pushbuttons_number;if(m>n)m=n;
  if(upper_db)
- {UInt16 idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id);
-  ControlType*b=FrmGetObjectPtr(f,idx);CtlSetLabel(b,"...");
-  CtlSetValue(b,0);i0++;n-=upper_db;
- }if(m>n)m=n;
- for(i=i0;i<m;i++)
- {UInt16 idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id+i);
-  ControlType*b=FrmGetObjectPtr(f,idx);CtlSetLabel(b,h[i+upper_db]->name);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_First_id);
+  CtlSetLabel(b,"...");CtlSetValue(b,0);i++;
+ }
+ for(;i<m;i++)
+ {b=get_control_ptr(f,Dictionary_Pushbutton_First_id+i);
+  CtlSetLabel(b,h[i+upper_db]->name);
   CtlSetValue(b,selected-upper_db==i);
  }
  if(m==n)for(;i<Dictionary_Pushbuttons_number;i++)
- {UInt16 idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id+i);
-  ControlType*b=FrmGetObjectPtr(f,idx);CtlHideControl(b);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_First_id+i);
+  CtlHideControl(b);
  }else
- {UInt16 idx=FrmGetObjectIndex(f,
-   Dictionary_Pushbutton_First_id+Dictionary_Pushbuttons_number-1);
-  ControlType*b=FrmGetObjectPtr(f,idx);CtlSetLabel(b,"...");
-  CtlSetValue(b,0);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_Last_id);
+  CtlSetLabel(b,"...");CtlSetValue(b,0);
  }
 }static int
 load_selected_header(void)
@@ -101,34 +101,34 @@ on_enter(void)
  }change_flag=info_line_no=0;
 }static int
 process_push(int n)
-{FormType*f=get_current_form();UInt16 idx;ControlType*b;
+{FormType*f=get_current_form();ControlType*b;
  int db_num,i;get_database_list(&db_num);
  n-=Dictionary_Pushbutton_First_id;
  if(upper_db+n==selected&&(n||!upper_db)
     &&(upper_db+Dictionary_Pushbuttons_number>db_num))
   return 0;
  if(upper_db&&!n)
- {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id);
-  b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_First_id);
+  CtlSetValue(b,0);
   upper_db-=Dictionary_Pushbuttons_number-3;if(upper_db<0)upper_db=0;
-  idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_Last_id);
-  b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
+  b=get_control_ptr(f,Dictionary_Pushbutton_Last_id);
+  CtlSetValue(b,0);
   show_buttons(f);return!0;
  }
  if(db_num-upper_db>Dictionary_Pushbuttons_number
   &&n==Dictionary_Pushbuttons_number-1)
- {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_Last_id);
-  b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_Last_id);
+  CtlSetValue(b,0);
   upper_db+=Dictionary_Pushbuttons_number-3;
   if(upper_db>db_num-Dictionary_Pushbuttons_number)
    upper_db=db_num-Dictionary_Pushbuttons_number;
-  idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id);
-  b=FrmGetObjectPtr(f,idx);CtlSetValue(b,0);
+  b=get_control_ptr(f,Dictionary_Pushbutton_First_id);
+  CtlSetValue(b,0);
   show_buttons(f);return!0;
  }
  for(i=0;i<Dictionary_Pushbuttons_number;i++)
- {idx=FrmGetObjectIndex(f,Dictionary_Pushbutton_First_id+i);
-  b=FrmGetObjectPtr(f,idx);CtlSetValue(b,i==n);
+ {b=get_control_ptr(f,Dictionary_Pushbutton_First_id+i);
+  CtlSetValue(b,i==n);
  }selected=upper_db+n;
  if(!load_selected_header())
  {info_line_no=0;clr_db_comment();show_selected_database(f);}
