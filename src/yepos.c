@@ -18,7 +18,7 @@ enum local_constants
  log2_cache_length=4,cache_length=1<<log2_cache_length,
  cache_length_mask=cache_length-1,list_mode_inc_value=7
 };
-enum local_defines{facunde=0,zlib_irrobust=1};
+enum local_defines{facunde=0,tempora_dic=1,zlib_irrobust=1};
 static void
 draw_chars(const char*s,int x,int y)
 {if(facunde)WinDrawChars(s,StrLen(s),x,y);
@@ -310,7 +310,8 @@ static int
 find_article(const char*title)
 {unsigned arity,lower=0,upper,try_next,prev_lower=0;
  unsigned title_len;enum bisect_result r;char*t;int ret=0;
- unsigned long tic=TimGetTicks();if(!dh.db)return!0;last_line_shown=0;
+ unsigned long tic;if(tempora_dic){tic=TimGetTicks();}
+ if(!dh.db)return!0;last_line_shown=0;
  if(!title||!*title)
  {current_article=0;current_content_record=first_record(0);
   if(*idx_handles)MemHandleUnlock(*idx_handles);
@@ -386,6 +387,7 @@ find_article(const char*title)
   }
  }
 exit:MemPtrFree(t);
+ if(tempora_dic)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-2,status_line_y);
  }return ret;
@@ -527,7 +529,8 @@ show_article(void)
  int x,y=y0,dy=11,y_max=y0+articles_height-dy,n,n0=0,
   width0=screen_width-x0-margin,width=width0,xb,vex=0;
  MemHandle rec=*idx_handles;MemPtr ptr=*indices;
- int saved=0;unsigned long tic=TimGetTicks();
+ int saved=0;unsigned long tic;
+ if(tempora_dic)tic=TimGetTicks();
  if(!dh.db)return;first_line_shown=last_line_shown;
  if(facunde)
  {char s[0x33];StrIToA(s,current_content_record);StrCat(s,":");
@@ -569,6 +572,7 @@ show_article(void)
  {unlock_handle(idx_handles);*idx_handles=rec;*indices=ptr;
   restore_uncompressed();
  }
+ if(tempora_dic)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-tic);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-30,status_line_y);
  }
@@ -684,7 +688,7 @@ on_enter_main_form(void)
  int field_idx,show_art=skip_main_form_redraw;
  FrmDrawForm(form);show_battery(!0);
  clr_status_line();
- if(!vex)
+ if(!vex&&tempora_dic)
  {char s[17];int sl;StrIToA(s,TimGetTicks()-global_ticks);sl=StrLen(s);
   WinDrawChars(s,sl,screen_width-sl*5-60,status_line_y);vex=!0;
  }
@@ -812,7 +816,7 @@ close_all(void)
 }UInt32
 PilotMain(UInt16 cmd,void*params,UInt16 flags)
 {if(cmd!=sysAppLaunchCmdNormalLaunch)return 0;
- global_ticks=TimGetTicks();
+ if(tempora_dic)global_ticks=TimGetTicks();
  if(init()){SysTaskDelay(50);return 0;}
  goto_form(MainForm_id);event_loop();
  close_all();return 0;
