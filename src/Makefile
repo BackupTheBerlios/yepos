@@ -4,9 +4,9 @@ CC = m68k-palmos-gcc
 LD = m68k-palmos-gcc
 CPPFLAGS = -I../extern -I. -DNEWGCC
 CFLAGS = -Wall -O2
-yepos_version=pre-0.1
+yepos_version=0.1
 #whether to build executables for all languages (not only Latin)
-BUILD_LANGS=0
+BUILD_LANGS=1
 #whether to build test prcs
 BUILD_TESTS=0
 Lang=lat
@@ -66,7 +66,7 @@ ${o}/mem_ory.test.o: mem_ory.test.c mem_ory.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/zlib_error_alert.o: zlib_error_alert.c zlib_error_alert.h control_ids.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
-#Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+#Copyright (C) 2008, 2009 Ineiev<ineiev@users.sourceforge.net>, super V 93
 #
 #yepos is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
