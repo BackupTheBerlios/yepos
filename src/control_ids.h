@@ -27,7 +27,7 @@
 #define Dictionary_Pushbutton_Last_id		(Dictionary_Pushbutton_First_id+Dictionary_Pushbuttons_number-1)
 #define OK_Button_id				(5100)
 #define Cancel_Button_id			(5099)
-/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 yepos is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -69,7 +69,7 @@ free_chunk(struct mem_chunk p)
  }if(d>=mem_handles_num||d<0)return;
  if(busy_handles[d]){MemHandleUnlock(busy_handles[d]);busy_handles[d]=0;}
  DmResizeRecord(db,d,min_chunk_size);
-}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+}/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

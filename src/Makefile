@@ -66,7 +66,7 @@ ${o}/mem_ory.test.o: mem_ory.test.c mem_ory.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
 ${o}/zlib_error_alert.o: zlib_error_alert.c zlib_error_alert.h control_ids.h
 	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
-#Copyright (C) 2008, 2009 Ineiev<ineiev@users.sourceforge.net>, super V 93
+#Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 #
 #yepos is free software; you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by

@@ -20,7 +20,7 @@ zlib_error_alert(int error,const char*function)
   case Z_VERSION_ERROR:err_code="Z_VERSION_ERROR";break;
   default:err_code=s;StrIToA(s,error);
  }return FrmCustomAlert(ZLib_Error_Alert_id,function,err_code," ");
-}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+}/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

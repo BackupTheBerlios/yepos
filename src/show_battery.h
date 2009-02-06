@@ -1,6 +1,6 @@
 /* yepos: a PalmOS dictionary
 battery indicator header
-Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

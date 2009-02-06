@@ -32,7 +32,7 @@ show_battery(int now)
  WinDrawChars(s,StrLen(s),p,0);WinDrawLine(19,0,19,10);
  WinDrawLine(20,3,21,3);WinDrawLine(20,7,21,7);WinDrawLine(22,3,22,7);
  WinDrawLine(0,0,19,0);WinDrawLine(0,10,19,10);WinDrawLine(0,0,0,10);
-}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+}/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

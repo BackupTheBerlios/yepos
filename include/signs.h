@@ -1,5 +1,5 @@
 /*yepos the PalmOS dictionary: application-wide constants
-Copyright (C) 2008 D.T.Ineiev<ineiev@users.sourceforge.net>, super V 93
+Copyright (C) 2008, 2009 D.T.Ineiev<ineiev@users.berlios.de>, super V 93
 This program is under the GNU GPL v3+*/
 /*this creator id was officially reserved for Ineiev (Nov 2008)*/
 #define CREATOR_STRING "yEpo"

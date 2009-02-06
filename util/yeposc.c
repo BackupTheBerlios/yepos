@@ -1,5 +1,5 @@
 /* yepos database compiler
-Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ static unsigned initial_index_length=default_initial_index_length;
 static void
 usage(void)
 {printf("%s 0.1 (built "__DATE__"): yepos database compiler\n"
- "Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93\n"
+ "Copyright (C) 2008 Ineiev<ineiev@users.berlios.de>, super V 93\n"
  "%s comes with NO WARRANTY, to the extent permitted by law.\n"
  "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
  "Usage: %s -i in_file_name -o out_file_name\n"

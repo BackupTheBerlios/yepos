@@ -821,7 +821,7 @@ PilotMain(UInt16 cmd,void*params,UInt16 flags)
  if(init()){SysTaskDelay(50);return 0;}
  goto_form(MainForm_id);event_loop();
  close_all();return 0;
-}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+}/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 yepos is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

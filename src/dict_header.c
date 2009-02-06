@@ -67,7 +67,7 @@ void
 close_dict_header(struct dict_header*d)
 {if(!d)return;if(d->rec0){MemHandleUnlock(d->rec0);d->rec0=0;}
  if(d->db){DmCloseDatabase(d->db);d->db=0;}
-}/*Copyright (C) 2008 Ineiev<ineiev@users.sourceforge.net>, super V 93
+}/*Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 yepos is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
