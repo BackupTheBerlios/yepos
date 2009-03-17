@@ -27,7 +27,7 @@ Some not so important features that are also planned:
 (2) databases in memory cards as well as in Palm RAM
 
 Not planned neither in foreseeable future, nor later:
-(0) multibyte encodings support
+(0) multibyte encodings
 
 There are other free dictionary programs available for PalmOS.
 Here I list reasons why I didn't like them
@@ -53,8 +53,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Although yepos is free, PalmOS is not, so it is not very ethical to
 support Palm producers by writing free programs that primarily run on their
-proprietary system. yepos author writes the program for personally historical
-reasons.
+proprietary system. yepos author writes the program for personally
+historical reasons (another excuse is that PalmOS is not supported by
+it's developers any more).
+
+Please don't use proprietary programs when you have a free alternative!
 
 Another necessary copyright note: files in extern/ directory are neigher
 copyrighted by yepos author, nor parts of yepos; they are used with it
