@@ -1,0 +1,891 @@
+This file is produced automatically from git repository
+You may want to edit it manually if you distribute
+your changes without accessing git repository
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Mar 17 13:23:47 2009 +0300
+
+    initial add
+
+* cat_changelog
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Feb 6 16:49:36 2009 +0300
+
+    migrate to BerliOS
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+* include/signs.h
+* src/Makefile
+* src/control_ids.h
+* src/dict_header.c
+* src/dict_header.h
+* src/enums.h
+* src/globals.h
+* src/mem_ory.c
+* src/mem_ory.h
+* src/mem_ory.test.c
+* src/prefs.c
+* src/prefs.h
+* src/settings.c
+* src/settings.h
+* src/show_battery.c
+* src/show_battery.h
+* src/yepos.c
+* src/yepos.rcp.in
+* src/zlib_error_alert.c
+* src/zlib_error_alert.h
+* util/deyepos.c
+* util/yeposc.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Feb 6 16:31:41 2009 +0300
+
+    setup website links
+
+* doc/en/index.html
+* doc/en/yepos.html
+* doc/index.html
+* doc/ru/index.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Jan 16 19:00:38 2009 +0300
+
+    bump version to post-0.1
+
+* src/Makefile
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Jan 16 18:41:03 2009 +0300
+
+    bump version to 0.1
+
+* src/Makefile
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Jan 16 18:40:47 2009 +0300
+
+    note extern/ copyright status; point to binaries
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Jan 15 19:55:56 2009 +0300
+
+    note extern/ copyright status; point to binaries
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Jan 13 21:18:02 2009 +0300
+
+    add Palm installation instructions
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 16 20:03:33 2008 +0300
+
+    more documentation
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Dec 13 13:47:41 2008 +0300
+
+    cleanup show_buttons(), process_push()
+    
+    unite FrmGetObjectIndex() and FrmGetObjectPtr() calls
+    in static get_object_ptr()
+
+* src/settings.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Dec 13 13:05:00 2008 +0300
+
+    show selected database item on enter settings
+
+* src/settings.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Dec 13 13:04:11 2008 +0300
+
+    fix database list scroll
+
+* src/settings.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Dec 13 12:27:35 2008 +0300
+
+    fix per-line to full mode switch
+    
+    reset pointer to the first character shown within article
+    when switching to full mode
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Dec 13 11:47:58 2008 +0300
+
+    compile-time switch the benchmarks output
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Dec 12 20:31:01 2008 +0300
+
+    add version to info string
+
+* src/Makefile
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Dec 12 20:00:42 2008 +0300
+
+    rearrange internal links
+
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Dec 11 20:05:11 2008 +0300
+
+    add docs
+
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Dec 11 20:02:42 2008 +0300
+
+    update declarations
+
+* README
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 9 21:25:31 2008 +0300
+
+    fix pre-fetch
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 9 21:25:03 2008 +0300
+
+    more robust zlib errors
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Mon Dec 8 20:50:11 2008 +0300
+
+    s/WinDrawPixel/WinDrawLine/
+    
+    PalmOS 2.0 has no WinDrawPixel()
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Mon Dec 8 20:49:24 2008 +0300
+
+    fix startup in per-line mode
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Dec 7 22:53:22 2008 +0300
+
+    show ellipses by incomplete articles
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Dec 7 22:17:06 2008 +0300
+
+    fix cache pre-fetch
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 2 18:45:02 2008 +0300
+
+    update declarations
+    
+    PalmOS 2.0 devices are shipped with the same 16 MHz DragonBall
+    as my IIIxe; they shall run yepos quite quickly, though they
+    have no memory for a really large dictionary
+
+* README
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 2 18:36:07 2008 +0300
+
+    add `about' button in settings form
+
+* src/control_ids.h
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+* src/settings.c
+* src/yepos.rcp.in
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Dec 2 06:00:57 2008 +0300
+
+    initially show long articles
+    
+    reverse_font_word_wrap() needs revision;
+    or probably whole implementation should be rewritten
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 28 20:42:42 2008 +0300
+
+    settings: show selected dictionary description
+
+* src/Makefile
+* src/control_ids.h
+* src/enums.h
+* src/globals.h
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+* src/settings.c
+* src/yepos.c
+* src/yepos.rcp.in
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 27 19:48:52 2008 +0300
+
+    pre-fetch nearest records
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 27 18:56:41 2008 +0300
+
+    mv dict_header functions into a dedicated module
+
+* src/Makefile
+* src/dict_header.c
+* src/dict_header.h
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 27 06:01:50 2008 +0300
+
+    mv db_name_chain definition into list_databases()
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Nov 25 18:56:08 2008 +0300
+
+    cleanup initialisation
+    
+    rename fail-on-open-help string to internal-error-help;
+    add db-index-out-of-range alert;
+    make loading database to be responsibility of load_preferences();
+    rm alloc_indices() as it ended up in an empty function;
+    completely replave init_statum() with load_preferences();
+
+* src/control_ids.h
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+* src/prefs.c
+* src/yepos.c
+* src/yepos.rcp.in
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Mon Nov 24 21:27:23 2008 +0300
+
+    simplify idx_handles, indices structures
+    
+    the arrays are not more allocated dynamically;
+    they are always two items long
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Mon Nov 24 19:02:04 2008 +0300
+
+    add fail-open-database alert
+
+* src/control_ids.h
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+* src/yepos.c
+* src/yepos.rcp.in
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Nov 23 16:24:09 2008 +0300
+
+    skip find_article() when it is not needed
+    
+    don't find article on return from the settings form when the
+    database has not been replaced
+
+* src/globals.h
+* src/settings.c
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Nov 23 15:09:27 2008 +0300
+
+    don't extract first article on load_database()
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Nov 23 14:55:41 2008 +0300
+
+    fix cache code
+
+* src/mem_ory.c
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Nov 22 17:14:58 2008 +0300
+
+    show comments of current database
+
+* src/globals.h
+* src/settings.c
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Nov 22 17:12:50 2008 +0300
+
+    show startup time
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Nov 22 15:12:42 2008 +0300
+
+    add uncompressed records cache
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Nov 22 12:49:27 2008 +0300
+
+    fix bisect bug; cleanup saving uncompressed
+    
+    when plus become 0, it the bisect procedures used to hang;
+    save_uncompressed(), restore_uncompressed() and
+    discard_uncompressed() now work uniformly for non-compressed
+    databases, too
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 21 22:14:41 2008 +0300
+
+    improve wrapping
+    
+    in per-line mode, it shows as many characters
+    as fit in the line;
+    in `full article' mode, it wraps on (roughly)
+    any non-alphanumeric signs
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 21 19:50:07 2008 +0300
+
+    fix init(); save list_mode in prefs
+
+* src/globals.h
+* src/prefs.c
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 21 19:07:12 2008 +0300
+
+    cleanup fail-on-init sequence
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 21 19:05:35 2008 +0300
+
+    some cleanup
+    
+    rm unused stuff
+    add invalid handlers enum
+    redefine write_chunk as a static inline
+
+* src/mem_ory.c
+* src/mem_ory.h
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Fri Nov 21 19:05:02 2008 +0300
+
+    add build options
+
+* src/Makefile
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 20 22:08:49 2008 +0300
+
+    declaration update
+
+* README
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 20 22:06:44 2008 +0300
+
+    per-line mode cursor enhanced
+    
+    it is shown with a delay to accumulate many
+    penMoveEvent events so the cursor wouldn't twinkle
+    too often
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 20 21:05:35 2008 +0300
+
+    switch to highest article from per-line mode, too
+    
+    when penUpEvent pointed in the current article,
+    yepos did nothing
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Thu Nov 20 21:01:49 2008 +0300
+
+    use storage memory instead of dynamic
+    
+    to keep uncompressed records content
+
+* src/Makefile
+* src/mem_ory.c
+* src/mem_ory.h
+* src/mem_ory.test.c
+* src/mem_ory.test.def
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Wed Nov 19 06:01:37 2008 +0300
+
+    mv zlib_error_alert() to a separate file
+
+* src/Makefile
+* src/yepos.c
+* src/zlib_error_alert.c
+* src/zlib_error_alert.h
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Nov 18 21:31:01 2008 +0300
+
+    penUp in per-line mode selects `full' article
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Nov 18 20:39:55 2008 +0300
+
+    increment 7 articles in per-line mode
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Nov 18 19:55:54 2008 +0300
+
+    initially add per-line mode
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Nov 18 18:58:29 2008 +0300
+
+    rm unrelevant set_db_name
+
+* src/prefs.c
+* src/prefs.h
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Mon Nov 17 21:43:36 2008 +0300
+
+    main form: fix pen down responsibility
+    
+    when field is tapped it should react;
+    window handler should not catch the event
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Nov 16 23:39:13 2008 +0300
+
+    initialy add
+
+* README
+* extern/README
+* extern/SysZLib.h
+* extern/src/palm.zlib-1.1.4/ChangeLog
+* extern/src/palm.zlib-1.1.4/FAQ
+* extern/src/palm.zlib-1.1.4/INDEX
+* extern/src/palm.zlib-1.1.4/Make_vms.com
+* extern/src/palm.zlib-1.1.4/Makefile
+* extern/src/palm.zlib-1.1.4/Makefile.in
+* extern/src/palm.zlib-1.1.4/Makefile.riscos
+* extern/src/palm.zlib-1.1.4/PALMREAD.me
+* extern/src/palm.zlib-1.1.4/README
+* extern/src/palm.zlib-1.1.4/SysZLib.c
+* extern/src/palm.zlib-1.1.4/SysZLib.h
+* extern/src/palm.zlib-1.1.4/SysZLib0.S
+* extern/src/palm.zlib-1.1.4/adler32.S
+* extern/src/palm.zlib-1.1.4/adler32.c
+* extern/src/palm.zlib-1.1.4/algorithm.txt
+* extern/src/palm.zlib-1.1.4/amiga/Makefile.pup
+* extern/src/palm.zlib-1.1.4/amiga/Makefile.sas
+* extern/src/palm.zlib-1.1.4/compress.c
+* extern/src/palm.zlib-1.1.4/configure
+* extern/src/palm.zlib-1.1.4/contrib/README.contrib
+* extern/src/palm.zlib-1.1.4/contrib/asm386/gvmat32.asm
+* extern/src/palm.zlib-1.1.4/contrib/asm386/gvmat32c.c
+* extern/src/palm.zlib-1.1.4/contrib/asm386/mkgvmt32.bat
+* extern/src/palm.zlib-1.1.4/contrib/asm386/zlibvc.def
+* extern/src/palm.zlib-1.1.4/contrib/asm386/zlibvc.dsp
+* extern/src/palm.zlib-1.1.4/contrib/asm386/zlibvc.dsw
+* extern/src/palm.zlib-1.1.4/contrib/asm586/README.586
+* extern/src/palm.zlib-1.1.4/contrib/asm586/match.S
+* extern/src/palm.zlib-1.1.4/contrib/asm686/README.686
+* extern/src/palm.zlib-1.1.4/contrib/asm686/match.S
+* extern/src/palm.zlib-1.1.4/contrib/delphi/zlib.mak
+* extern/src/palm.zlib-1.1.4/contrib/delphi/zlibdef.pas
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/d_zlib.bpr
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/d_zlib.cpp
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/readme.txt
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib.bpg
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib.bpr
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib.cpp
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib.pas
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib32.bpr
+* extern/src/palm.zlib-1.1.4/contrib/delphi2/zlib32.cpp
+* extern/src/palm.zlib-1.1.4/contrib/iostream/test.cpp
+* extern/src/palm.zlib-1.1.4/contrib/iostream/zfstream.cpp
+* extern/src/palm.zlib-1.1.4/contrib/iostream/zfstream.h
+* extern/src/palm.zlib-1.1.4/contrib/iostream2/zstream.h
+* extern/src/palm.zlib-1.1.4/contrib/iostream2/zstream_test.cpp
+* extern/src/palm.zlib-1.1.4/contrib/minizip/ChangeLogUnzip
+* extern/src/palm.zlib-1.1.4/contrib/minizip/Makefile
+* extern/src/palm.zlib-1.1.4/contrib/minizip/miniunz.c
+* extern/src/palm.zlib-1.1.4/contrib/minizip/minizip.c
+* extern/src/palm.zlib-1.1.4/contrib/minizip/readme.txt
+* extern/src/palm.zlib-1.1.4/contrib/minizip/unzip.c
+* extern/src/palm.zlib-1.1.4/contrib/minizip/unzip.def
+* extern/src/palm.zlib-1.1.4/contrib/minizip/unzip.h
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zip.c
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zip.def
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zip.h
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zlibvc.def
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zlibvc.dsp
+* extern/src/palm.zlib-1.1.4/contrib/minizip/zlibvc.dsw
+* extern/src/palm.zlib-1.1.4/contrib/untgz/Makefile
+* extern/src/palm.zlib-1.1.4/contrib/untgz/makefile.w32
+* extern/src/palm.zlib-1.1.4/contrib/untgz/untgz.c
+* extern/src/palm.zlib-1.1.4/contrib/visual-basic.txt
+* extern/src/palm.zlib-1.1.4/crc32.S
+* extern/src/palm.zlib-1.1.4/crc32.c
+* extern/src/palm.zlib-1.1.4/deflate.c
+* extern/src/palm.zlib-1.1.4/deflate.h
+* extern/src/palm.zlib-1.1.4/descrip.mms
+* extern/src/palm.zlib-1.1.4/example.c
+* extern/src/palm.zlib-1.1.4/gzio.c
+* extern/src/palm.zlib-1.1.4/infblock.c
+* extern/src/palm.zlib-1.1.4/infblock.h
+* extern/src/palm.zlib-1.1.4/infcodes.c
+* extern/src/palm.zlib-1.1.4/infcodes.h
+* extern/src/palm.zlib-1.1.4/inffast.c
+* extern/src/palm.zlib-1.1.4/inffast.h
+* extern/src/palm.zlib-1.1.4/inffixed.h
+* extern/src/palm.zlib-1.1.4/inflate.c
+* extern/src/palm.zlib-1.1.4/inftrees.c
+* extern/src/palm.zlib-1.1.4/inftrees.h
+* extern/src/palm.zlib-1.1.4/infutil.c
+* extern/src/palm.zlib-1.1.4/infutil.h
+* extern/src/palm.zlib-1.1.4/lmatch.S
+* extern/src/palm.zlib-1.1.4/maketree.c
+* extern/src/palm.zlib-1.1.4/minigzip.c
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.b32
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.bor
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.dj2
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.emx
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.msc
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.tc
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.w32
+* extern/src/palm.zlib-1.1.4/msdos/Makefile.wat
+* extern/src/palm.zlib-1.1.4/msdos/zlib.def
+* extern/src/palm.zlib-1.1.4/msdos/zlib.rc
+* extern/src/palm.zlib-1.1.4/nt/Makefile.emx
+* extern/src/palm.zlib-1.1.4/nt/Makefile.gcc
+* extern/src/palm.zlib-1.1.4/nt/Makefile.nt
+* extern/src/palm.zlib-1.1.4/nt/zlib.dnt
+* extern/src/palm.zlib-1.1.4/os2/Makefile.os2
+* extern/src/palm.zlib-1.1.4/os2/zlib.def
+* extern/src/palm.zlib-1.1.4/trees.c
+* extern/src/palm.zlib-1.1.4/trees.h
+* extern/src/palm.zlib-1.1.4/uncompr.c
+* extern/src/palm.zlib-1.1.4/ver.bin
+* extern/src/palm.zlib-1.1.4/zconf.h
+* extern/src/palm.zlib-1.1.4/zlib.3
+* extern/src/palm.zlib-1.1.4/zlib.h
+* extern/src/palm.zlib-1.1.4/zlib.html
+* extern/src/palm.zlib-1.1.4/zutil.c
+* extern/src/palm.zlib-1.1.4/zutil.h
+* extern/src/zlib-1.2.3/ChangeLog
+* extern/src/zlib-1.2.3/FAQ
+* extern/src/zlib-1.2.3/INDEX
+* extern/src/zlib-1.2.3/Makefile
+* extern/src/zlib-1.2.3/Makefile.in
+* extern/src/zlib-1.2.3/README
+* extern/src/zlib-1.2.3/adler32.c
+* extern/src/zlib-1.2.3/algorithm.txt
+* extern/src/zlib-1.2.3/amiga/Makefile.pup
+* extern/src/zlib-1.2.3/amiga/Makefile.sas
+* extern/src/zlib-1.2.3/as400/bndsrc
+* extern/src/zlib-1.2.3/as400/compile.clp
+* extern/src/zlib-1.2.3/as400/readme.txt
+* extern/src/zlib-1.2.3/as400/zlib.inc
+* extern/src/zlib-1.2.3/compress.c
+* extern/src/zlib-1.2.3/configure
+* extern/src/zlib-1.2.3/contrib/README.contrib
+* extern/src/zlib-1.2.3/contrib/ada/buffer_demo.adb
+* extern/src/zlib-1.2.3/contrib/ada/mtest.adb
+* extern/src/zlib-1.2.3/contrib/ada/read.adb
+* extern/src/zlib-1.2.3/contrib/ada/readme.txt
+* extern/src/zlib-1.2.3/contrib/ada/test.adb
+* extern/src/zlib-1.2.3/contrib/ada/zlib-streams.adb
+* extern/src/zlib-1.2.3/contrib/ada/zlib-streams.ads
+* extern/src/zlib-1.2.3/contrib/ada/zlib-thin.adb
+* extern/src/zlib-1.2.3/contrib/ada/zlib-thin.ads
+* extern/src/zlib-1.2.3/contrib/ada/zlib.adb
+* extern/src/zlib-1.2.3/contrib/ada/zlib.ads
+* extern/src/zlib-1.2.3/contrib/ada/zlib.gpr
+* extern/src/zlib-1.2.3/contrib/asm586/README.586
+* extern/src/zlib-1.2.3/contrib/asm586/match.S
+* extern/src/zlib-1.2.3/contrib/asm686/README.686
+* extern/src/zlib-1.2.3/contrib/asm686/match.S
+* extern/src/zlib-1.2.3/contrib/blast/Makefile
+* extern/src/zlib-1.2.3/contrib/blast/README
+* extern/src/zlib-1.2.3/contrib/blast/blast.c
+* extern/src/zlib-1.2.3/contrib/blast/blast.h
+* extern/src/zlib-1.2.3/contrib/blast/test.pk
+* extern/src/zlib-1.2.3/contrib/blast/test.pk
+* extern/src/zlib-1.2.3/contrib/blast/test.txt
+* extern/src/zlib-1.2.3/contrib/delphi/ZLib.pas
+* extern/src/zlib-1.2.3/contrib/delphi/ZLibConst.pas
+* extern/src/zlib-1.2.3/contrib/delphi/readme.txt
+* extern/src/zlib-1.2.3/contrib/delphi/zlibd32.mak
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib.build
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib.chm
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib.chm
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib.sln
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/AssemblyInfo.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/ChecksumImpl.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/CircularBuffer.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/CodecBase.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/Deflater.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/DotZLib.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/DotZLib.csproj
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/GZipStream.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/Inflater.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/DotZLib/UnitTests.cs
+* extern/src/zlib-1.2.3/contrib/dotzlib/LICENSE_1_0.txt
+* extern/src/zlib-1.2.3/contrib/dotzlib/readme.txt
+* extern/src/zlib-1.2.3/contrib/infback9/README
+* extern/src/zlib-1.2.3/contrib/infback9/infback9.c
+* extern/src/zlib-1.2.3/contrib/infback9/infback9.h
+* extern/src/zlib-1.2.3/contrib/infback9/inffix9.h
+* extern/src/zlib-1.2.3/contrib/infback9/inflate9.h
+* extern/src/zlib-1.2.3/contrib/infback9/inftree9.c
+* extern/src/zlib-1.2.3/contrib/infback9/inftree9.h
+* extern/src/zlib-1.2.3/contrib/inflate86/inffas86.c
+* extern/src/zlib-1.2.3/contrib/inflate86/inffast.S
+* extern/src/zlib-1.2.3/contrib/iostream/test.cpp
+* extern/src/zlib-1.2.3/contrib/iostream/zfstream.cpp
+* extern/src/zlib-1.2.3/contrib/iostream/zfstream.h
+* extern/src/zlib-1.2.3/contrib/iostream2/zstream.h
+* extern/src/zlib-1.2.3/contrib/iostream2/zstream_test.cpp
+* extern/src/zlib-1.2.3/contrib/iostream3/README
+* extern/src/zlib-1.2.3/contrib/iostream3/TODO
+* extern/src/zlib-1.2.3/contrib/iostream3/test.cc
+* extern/src/zlib-1.2.3/contrib/iostream3/zfstream.cc
+* extern/src/zlib-1.2.3/contrib/iostream3/zfstream.h
+* extern/src/zlib-1.2.3/contrib/masm686/match.asm
+* extern/src/zlib-1.2.3/contrib/masmx64/bld_ml64.bat
+* extern/src/zlib-1.2.3/contrib/masmx64/gvmat64.asm
+* extern/src/zlib-1.2.3/contrib/masmx64/gvmat64.obj
+* extern/src/zlib-1.2.3/contrib/masmx64/gvmat64.obj
+* extern/src/zlib-1.2.3/contrib/masmx64/inffas8664.c
+* extern/src/zlib-1.2.3/contrib/masmx64/inffasx64.asm
+* extern/src/zlib-1.2.3/contrib/masmx64/inffasx64.obj
+* extern/src/zlib-1.2.3/contrib/masmx64/inffasx64.obj
+* extern/src/zlib-1.2.3/contrib/masmx64/readme.txt
+* extern/src/zlib-1.2.3/contrib/masmx86/bld_ml32.bat
+* extern/src/zlib-1.2.3/contrib/masmx86/gvmat32.asm
+* extern/src/zlib-1.2.3/contrib/masmx86/gvmat32.obj
+* extern/src/zlib-1.2.3/contrib/masmx86/gvmat32.obj
+* extern/src/zlib-1.2.3/contrib/masmx86/gvmat32c.c
+* extern/src/zlib-1.2.3/contrib/masmx86/inffas32.asm
+* extern/src/zlib-1.2.3/contrib/masmx86/inffas32.obj
+* extern/src/zlib-1.2.3/contrib/masmx86/inffas32.obj
+* extern/src/zlib-1.2.3/contrib/masmx86/mkasm.bat
+* extern/src/zlib-1.2.3/contrib/masmx86/readme.txt
+* extern/src/zlib-1.2.3/contrib/minizip/ChangeLogUnzip
+* extern/src/zlib-1.2.3/contrib/minizip/Makefile
+* extern/src/zlib-1.2.3/contrib/minizip/crypt.h
+* extern/src/zlib-1.2.3/contrib/minizip/ioapi.c
+* extern/src/zlib-1.2.3/contrib/minizip/ioapi.h
+* extern/src/zlib-1.2.3/contrib/minizip/iowin32.c
+* extern/src/zlib-1.2.3/contrib/minizip/iowin32.h
+* extern/src/zlib-1.2.3/contrib/minizip/miniunz.c
+* extern/src/zlib-1.2.3/contrib/minizip/minizip.c
+* extern/src/zlib-1.2.3/contrib/minizip/mztools.c
+* extern/src/zlib-1.2.3/contrib/minizip/mztools.h
+* extern/src/zlib-1.2.3/contrib/minizip/unzip.c
+* extern/src/zlib-1.2.3/contrib/minizip/unzip.h
+* extern/src/zlib-1.2.3/contrib/minizip/zip.c
+* extern/src/zlib-1.2.3/contrib/minizip/zip.h
+* extern/src/zlib-1.2.3/contrib/pascal/example.pas
+* extern/src/zlib-1.2.3/contrib/pascal/readme.txt
+* extern/src/zlib-1.2.3/contrib/pascal/zlibd32.mak
+* extern/src/zlib-1.2.3/contrib/pascal/zlibpas.pas
+* extern/src/zlib-1.2.3/contrib/puff/Makefile
+* extern/src/zlib-1.2.3/contrib/puff/README
+* extern/src/zlib-1.2.3/contrib/puff/puff.c
+* extern/src/zlib-1.2.3/contrib/puff/puff.h
+* extern/src/zlib-1.2.3/contrib/puff/zeros.raw
+* extern/src/zlib-1.2.3/contrib/puff/zeros.raw
+* extern/src/zlib-1.2.3/contrib/testzlib/testzlib.c
+* extern/src/zlib-1.2.3/contrib/testzlib/testzlib.txt
+* extern/src/zlib-1.2.3/contrib/untgz/Makefile
+* extern/src/zlib-1.2.3/contrib/untgz/Makefile.msc
+* extern/src/zlib-1.2.3/contrib/untgz/untgz.c
+* extern/src/zlib-1.2.3/contrib/vstudio/readme.txt
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/miniunz.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/minizip.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/testzlib.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/zlib.rc
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/zlibstat.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/zlibvc.def
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/zlibvc.sln
+* extern/src/zlib-1.2.3/contrib/vstudio/vc7/zlibvc.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/miniunz.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/minizip.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/testzlib.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/testzlibdll.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/zlib.rc
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/zlibstat.vcproj
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/zlibvc.def
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/zlibvc.sln
+* extern/src/zlib-1.2.3/contrib/vstudio/vc8/zlibvc.vcproj
+* extern/src/zlib-1.2.3/crc32.c
+* extern/src/zlib-1.2.3/crc32.h
+* extern/src/zlib-1.2.3/deflate.c
+* extern/src/zlib-1.2.3/deflate.h
+* extern/src/zlib-1.2.3/example.c
+* extern/src/zlib-1.2.3/examples/README.examples
+* extern/src/zlib-1.2.3/examples/fitblk.c
+* extern/src/zlib-1.2.3/examples/gun.c
+* extern/src/zlib-1.2.3/examples/gzappend.c
+* extern/src/zlib-1.2.3/examples/gzjoin.c
+* extern/src/zlib-1.2.3/examples/gzlog.c
+* extern/src/zlib-1.2.3/examples/gzlog.h
+* extern/src/zlib-1.2.3/examples/zlib_how.html
+* extern/src/zlib-1.2.3/examples/zpipe.c
+* extern/src/zlib-1.2.3/examples/zran.c
+* extern/src/zlib-1.2.3/gzio.c
+* extern/src/zlib-1.2.3/infback.c
+* extern/src/zlib-1.2.3/inffast.c
+* extern/src/zlib-1.2.3/inffast.h
+* extern/src/zlib-1.2.3/inffixed.h
+* extern/src/zlib-1.2.3/inflate.c
+* extern/src/zlib-1.2.3/inflate.h
+* extern/src/zlib-1.2.3/inftrees.c
+* extern/src/zlib-1.2.3/inftrees.h
+* extern/src/zlib-1.2.3/make_vms.com
+* extern/src/zlib-1.2.3/minigzip.c
+* extern/src/zlib-1.2.3/msdos/Makefile.bor
+* extern/src/zlib-1.2.3/msdos/Makefile.dj2
+* extern/src/zlib-1.2.3/msdos/Makefile.emx
+* extern/src/zlib-1.2.3/msdos/Makefile.msc
+* extern/src/zlib-1.2.3/msdos/Makefile.tc
+* extern/src/zlib-1.2.3/old/Makefile.riscos
+* extern/src/zlib-1.2.3/old/README
+* extern/src/zlib-1.2.3/old/descrip.mms
+* extern/src/zlib-1.2.3/old/os2/Makefile.os2
+* extern/src/zlib-1.2.3/old/os2/zlib.def
+* extern/src/zlib-1.2.3/old/visual-basic.txt
+* extern/src/zlib-1.2.3/old/zlib.html
+* extern/src/zlib-1.2.3/projects/README.projects
+* extern/src/zlib-1.2.3/projects/visualc6/README.txt
+* extern/src/zlib-1.2.3/projects/visualc6/example.dsp
+* extern/src/zlib-1.2.3/projects/visualc6/minigzip.dsp
+* extern/src/zlib-1.2.3/projects/visualc6/zlib.dsp
+* extern/src/zlib-1.2.3/projects/visualc6/zlib.dsw
+* extern/src/zlib-1.2.3/qnx/package.qpg
+* extern/src/zlib-1.2.3/trees.c
+* extern/src/zlib-1.2.3/trees.h
+* extern/src/zlib-1.2.3/uncompr.c
+* extern/src/zlib-1.2.3/win32/DLL_FAQ.txt
+* extern/src/zlib-1.2.3/win32/Makefile.bor
+* extern/src/zlib-1.2.3/win32/Makefile.emx
+* extern/src/zlib-1.2.3/win32/Makefile.gcc
+* extern/src/zlib-1.2.3/win32/Makefile.msc
+* extern/src/zlib-1.2.3/win32/VisualC.txt
+* extern/src/zlib-1.2.3/win32/zlib.def
+* extern/src/zlib-1.2.3/win32/zlib1.rc
+* extern/src/zlib-1.2.3/zconf.h
+* extern/src/zlib-1.2.3/zconf.in.h
+* extern/src/zlib-1.2.3/zlib.3
+* extern/src/zlib-1.2.3/zlib.h
+* extern/src/zlib-1.2.3/zutil.c
+* extern/src/zlib-1.2.3/zutil.h
+* extern/zconf.h
+* include/signs.h
+* src/Makefile
+* src/control_ids.h
+* src/enums.h
+* src/globals.h
+* src/langs/en.rcp
+* src/langs/lat.rcp
+* src/langs/ru.rcp
+* src/prefs.c
+* src/prefs.h
+* src/settings.c
+* src/settings.h
+* src/show_battery.c
+* src/show_battery.h
+* src/yepos.c
+* src/yepos.def
+* src/yepos.rcp.in
+* util/Makefile
+* util/deyepos.c
+* util/yeposc.c
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sun Nov 16 23:37:57 2008 +0300
+
+    add GPLv3
+
+* COPYING
