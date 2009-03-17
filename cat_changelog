@@ -1,0 +1,14 @@
+#! /bin/sh
+# output ChangeLog via git, sed and grep
+# Copyright (C) 2008, 2009 D.T.Ineiev, super V 93
+# Email: <ineiev@users.sourceforge.net>
+# I am under the GNU GPLv3+
+echo "This file is produced automatically from git repository"
+echo "You may want to edit it manually if you distribute"
+echo "your changes without accessing git repository";echo
+git log -p --full-diff $1|grep -v "^[-+ic@]"|sed "/^Date/,/^diff/s/^/@/"|grep -v "^ "|\
+ sed -e "s/^@//;s/^diff --git a.\([^ ]*\) b.*/* \1/;" \
+     -e "s/^Binary files [/]dev[/]null and b[/]\(.*\) differ/* \1/"\
+     -e "s/^Binary files a[/]\(.*\) and [/]dev[/]null differ/* \1/"\
+     -e "s/^Author: .*\(<ineiev@users.sourceforge.net>\)/Author: D.T.Ineiev \1/"|\
+ grep -v "^\(\(new file mode\)\|\(deleted file mode\)\)\|\(\\ No newline at end of file\)"
