@@ -3,6 +3,52 @@ You may want to edit it manually if you distribute
 your changes without accessing git repository
 
 Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Mar 21 13:41:55 2009 +0300
+
+    rm blank-only lines
+
+* cat_changelog
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Mar 21 13:17:21 2009 +0300
+
+    note on moral base
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Mar 21 13:16:22 2009 +0300
+
+    typo
+
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Sat Mar 21 13:15:03 2009 +0300
+
+    note on SysZLib installation
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Mar 17 13:59:48 2009 +0300
+
+    update note on PalmOS slavery
+
+* README
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
+Date:   Tue Mar 17 13:25:22 2009 +0300
+
+    regenerate ChangeLog
+
+* ChangeLog
+
+Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Tue Mar 17 13:23:47 2009 +0300
 
     initial add
@@ -106,7 +152,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Sat Dec 13 13:47:41 2008 +0300
 
     cleanup show_buttons(), process_push()
-    
+
     unite FrmGetObjectIndex() and FrmGetObjectPtr() calls
     in static get_object_ptr()
 
@@ -130,7 +176,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Sat Dec 13 12:27:35 2008 +0300
 
     fix per-line to full mode switch
-    
+
     reset pointer to the first character shown within article
     when switching to full mode
 
@@ -192,7 +238,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Mon Dec 8 20:50:11 2008 +0300
 
     s/WinDrawPixel/WinDrawLine/
-    
+
     PalmOS 2.0 has no WinDrawPixel()
 
 * src/yepos.c
@@ -222,7 +268,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Tue Dec 2 18:45:02 2008 +0300
 
     update declarations
-    
+
     PalmOS 2.0 devices are shipped with the same 16 MHz DragonBall
     as my IIIxe; they shall run yepos quite quickly, though they
     have no memory for a really large dictionary
@@ -245,7 +291,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Tue Dec 2 06:00:57 2008 +0300
 
     initially show long articles
-    
+
     reverse_font_word_wrap() needs revision;
     or probably whole implementation should be rewritten
 
@@ -295,7 +341,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Tue Nov 25 18:56:08 2008 +0300
 
     cleanup initialisation
-    
+
     rename fail-on-open-help string to internal-error-help;
     add db-index-out-of-range alert;
     make loading database to be responsibility of load_preferences();
@@ -314,7 +360,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Mon Nov 24 21:27:23 2008 +0300
 
     simplify idx_handles, indices structures
-    
+
     the arrays are not more allocated dynamically;
     they are always two items long
 
@@ -336,7 +382,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Sun Nov 23 16:24:09 2008 +0300
 
     skip find_article() when it is not needed
-    
+
     don't find article on return from the settings form when the
     database has not been replaced
 
@@ -386,7 +432,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Sat Nov 22 12:49:27 2008 +0300
 
     fix bisect bug; cleanup saving uncompressed
-    
+
     when plus become 0, it the bisect procedures used to hang;
     save_uncompressed(), restore_uncompressed() and
     discard_uncompressed() now work uniformly for non-compressed
@@ -398,7 +444,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Fri Nov 21 22:14:41 2008 +0300
 
     improve wrapping
-    
+
     in per-line mode, it shows as many characters
     as fit in the line;
     in `full article' mode, it wraps on (roughly)
@@ -426,7 +472,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Fri Nov 21 19:05:35 2008 +0300
 
     some cleanup
-    
+
     rm unused stuff
     add invalid handlers enum
     redefine write_chunk as a static inline
@@ -452,7 +498,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Thu Nov 20 22:06:44 2008 +0300
 
     per-line mode cursor enhanced
-    
+
     it is shown with a delay to accumulate many
     penMoveEvent events so the cursor wouldn't twinkle
     too often
@@ -463,7 +509,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Thu Nov 20 21:05:35 2008 +0300
 
     switch to highest article from per-line mode, too
-    
+
     when penUpEvent pointed in the current article,
     yepos did nothing
 
@@ -473,7 +519,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Thu Nov 20 21:01:49 2008 +0300
 
     use storage memory instead of dynamic
-    
+
     to keep uncompressed records content
 
 * src/Makefile
@@ -526,7 +572,7 @@ Author: D.T.Ineiev <ineiev@users.sourceforge.net>
 Date:   Mon Nov 17 21:43:36 2008 +0300
 
     main form: fix pen down responsibility
-    
+
     when field is tapped it should react;
     window handler should not catch the event
 
