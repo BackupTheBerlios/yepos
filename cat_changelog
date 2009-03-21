@@ -10,5 +10,6 @@ git log -p --full-diff $1|grep -v "^[-+ic@]"|sed "/^Date/,/^diff/s/^/@/"|grep -v
  sed -e "s/^@//;s/^diff --git a.\([^ ]*\) b.*/* \1/;" \
      -e "s/^Binary files [/]dev[/]null and b[/]\(.*\) differ/* \1/"\
      -e "s/^Binary files a[/]\(.*\) and [/]dev[/]null differ/* \1/"\
+     -e "s/^[[:blank:]]*$//"\
      -e "s/^Author: .*\(<ineiev@users.sourceforge.net>\)/Author: D.T.Ineiev \1/"|\
  grep -v "^\(\(new file mode\)\|\(deleted file mode\)\)\|\(\\ No newline at end of file\)"
