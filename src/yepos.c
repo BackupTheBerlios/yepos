@@ -173,7 +173,7 @@ alloc_zlib_buf(void)
   zp1=MemPtrNew(zp1_size);
   if(!(p&&zp0&&zp1))
   {zlib_buf_size>>=3;
-   if(p)MemPtrFree(p);if(zp0)MemPtrFree(zp0);break;if(zp1)MemPtrFree(zp1);break;
+   if(p)MemPtrFree(p);if(zp0)MemPtrFree(zp0);if(zp1)MemPtrFree(zp1);break;
   }
   if(i==15)
   {char*_=MemPtrNew(zlib_buf_size);
