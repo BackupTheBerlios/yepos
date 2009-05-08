@@ -1,4 +1,4 @@
-/* yepos database compiler
+/* yepos database decompiler
 Copyright (C) 2008, 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 
 This program is free software; you can redistribute it and/or modify
