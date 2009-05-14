@@ -22,9 +22,9 @@ it's primary features are:
     no form titles, no fancy buttons, no other non-functional decorations
 
 Some not so important features that are also planned:
-(0) reverse search (in articles bodies rather than in their titles)
-(1) transliteration both for search input and sorting
-(2) databases in memory cards as well as in Palm RAM
+(0) transliteration for search sorting
+(1) databases in memory cards as well as in Palm RAM
+(2) reverse search (in articles bodies rather than in their titles)
 
 Not planned neither in foreseeable future, nor later:
 (0) multibyte encodings
