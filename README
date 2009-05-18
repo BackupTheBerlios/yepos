@@ -33,7 +33,7 @@ There are other free dictionary programs available for PalmOS.
 Here I list reasons why I didn't like them
 (0) PalmOpenDic doesn't come with database decompiler;
     it's host tools are written in Java
-    and I don't familiar with this language;
+    and I am not familiar with this language;
     the most important - it is very intellectual, but it is slow.
 (2) PAdict is a wonderful work oriented on Japaneese
 (3) PocketBabylon can't read compressed databases
