@@ -109,7 +109,7 @@ static unsigned initial_index_length=default_initial_index_length;
 static void
 usage(void)
 {printf("%s 0.1 (built "__DATE__"): yepos database compiler\n"
- "Copyright (C) 2008 Ineiev<ineiev@users.berlios.de>, super V 93\n"
+ "Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n"
  "%s comes with NO WARRANTY, to the extent permitted by law.\n"
  "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
  "Usage: %s -i in_file_name -o out_file_name\n"
@@ -616,10 +616,10 @@ count_content_records(void)
  if(n)
  {fprintf(stderr,"an error occured (%i)\n",n);
   record_buf[sizeof(record_buf)-1]=0;
-  fprintf(stderr,"record content is`\n%s\n'\n",record_buf);
+  fprintf(stderr,"record content is `\n%s\n'\n",record_buf);
   record_tail[record_tail_length]=0;
-  fprintf(stderr,"record tail is`\n%s\n'\n",record_tail);
-  fprintf(stderr,"last record title is`\n%s\n'\n",title_buf);
+  fprintf(stderr,"record tail is `\n%s\n'\n",record_tail);
+  fprintf(stderr,"last record title is `\n%s\n'\n",title_buf);
  }fclose(f);print_statistics();return 0;
 }static void
 close_all(void)
