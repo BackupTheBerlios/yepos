@@ -26,7 +26,7 @@ enum local_constants
 };
 static void
 usage(void)
-{printf("%s 0.1 (built "__DATE__"): yepos database extractor\n"
+{printf("%s 0.2 (built "__DATE__"): yepos database extractor\n"
  "Copyright (C) 2008 Ineiev<ineiev@users.berlios.de>, super V 93\n"
  "%s comes with NO WARRANTY, to the extent permitted by law.\n"
  "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
@@ -129,9 +129,9 @@ write_list(FILE*db,char*f)
   {int vex=0;unsigned f_=features;printf(" (");
    if(compression_bit&f_)
    {vex=!0;printf("compressed");f_&=~compression_bit;}
-   if(upcoding_table_bit&f_)
-   {if(vex)printf(" ");printf("upcoding");f_&=~upcoding_table_bit;}
-   if(f_){if(vex)printf(" ");printf("[unknown]");}
+   if(sort_table_bit&f_)
+   {if(vex)printf(" ");printf("sort_table");f_&=~sort_table_bit;vex=!0;}
+   if(f_){if(vex)printf(" ");printf("[unknown %X]",f_);}
    printf(")");
   }printf("\n");
   printf("uncompressed record size: %u maxumum\n",record_size);
@@ -142,6 +142,18 @@ write_list(FILE*db,char*f)
   for(i=0;i<ary;i++)
   {rec_num=get_hu(db);if(!i)content_records=rec_num-content_records;
    printf("First %u-ary index:    %u\n",i+1,rec_num);
+  }
+  if(features&sort_table_bit)
+  {unsigned string_length,table_length;
+   string_length=get_hu(db);table_length=get_hu(db);
+   printf("Sort order: string %u bytes; table %u bytes\n",
+    string_length,table_length);
+   putc(' ',txt);
+   while(string_length--)
+   {c=getc_counted(db);if(c||string_length)putchar(c);
+    if(c=='\n'&&string_length)putchar(' ');
+   }
+   while(table_length--)getc_counted(db);
   }
   {int b='\n';
    printf("Comment: `");

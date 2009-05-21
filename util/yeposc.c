@@ -40,13 +40,15 @@ enum local_constants
  content_increment_size=pointer_to_article_size,
  index_increment_size=volume_number_size+record_number_size
   +pointer_to_item_size,
+ sort_string_length_size=palm_ushort_size,
+ sort_table_length_size=palm_ushort_size,
  max_arity=0x33,
  VERSION=0,bits_per_byte=8,byte_mask=(1<<bits_per_byte)-1,
  db_name_length=32,
- creator_length=palm_ulong_size,db_type_length=palm_ulong_size
+ creator_length=palm_ulong_size,db_type_length=palm_ulong_size,
+ sort_table_length=1<<bits_per_byte,
+ sort_table_mask=(1<<bits_per_byte)-1
 };
-static unsigned char default_translit_table[1<<bits_per_byte],
- *translit_table=default_translit_table;
 static unsigned features;
 static char db_name[db_name_length];
 static const unsigned long max_records_per_db=65534;
@@ -108,7 +110,7 @@ write_unique_id(FILE*f)
 static unsigned initial_index_length=default_initial_index_length;
 static void
 usage(void)
-{printf("%s 0.1 (built "__DATE__"): yepos database compiler\n"
+{printf("%s 0.2 (built "__DATE__"): yepos database compiler\n"
  "Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n"
  "%s comes with NO WARRANTY, to the extent permitted by law.\n"
  "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
@@ -119,7 +121,8 @@ usage(void)
 static const char*txt_name,*out_name;
 static char*record_buf,*compressed_record_buf,*title_buf,
  *upcased_title_buf,*prev_title_buf,
- record_tail[65536],comment_string[16384];
+ record_tail[65536],comment_string[16384],sort_order[1024];
+static unsigned char sort_table[sort_table_length];
 static FILE*content_file;
 static const char content_file_name[]="yepos.0";
 static void
@@ -153,7 +156,7 @@ size limit only */
 /* the first record of the volume has the next structure:
 (PalmOS unsigned short) feature bits:
  (LSB) 0 - compression enabled
-       1 - translit table included (uninplemented yet)
+       1 - sort table is embedded
  (MSB)
 (PalmOS unsigned short) maximum uncompressed content record length
 (PalmOS unsigned short) maximum -arity number
@@ -164,7 +167,14 @@ size limit only */
  (PalmOS unsigned short) number of the first n-ary record
   within the volume (0 if none)
 }
-the rest is the string describing the dictionary */
+if(sort table is present)
+{
+ (PalmOS unsigned short) source part size in bytes
+ (PalmOS unsigned short) table size in bytes (should be 256)
+ [embedded source for the table]
+ [sort table: alphabetic order numbers for corresponding characters]
+}
+the rest is a comment string describing the dictionary */
 /* VFS (plain stream) dictionary begins with list of records:
  (PalmOS unsigned short) number of volumes in the file
 [repeat number of volumes times]
@@ -256,10 +266,17 @@ report_pos(void)
   articles,content_records);
 }
 static int
-translit(int c)
-{if(c>=0&&c<sizeof(default_translit_table))
-  return translit_table[c];
- return c;
+sort_weight(char c)
+{return sort_table[sort_table_mask&(unsigned char)c];}
+static int
+compare_titles(const char*a,const char*b)
+{for(;*a&&*b;a++,b++)
+ {if(sort_weight(*a)>sort_weight(*b))return 1;
+  if(sort_weight(*a)<sort_weight(*b))return-1;
+ }
+ if(sort_weight(*a)>sort_weight(*b))return 1;
+ if(sort_weight(*a)<sort_weight(*b))return-1;
+ return 0;
 }
 static int
 read_title(FILE*f)
@@ -273,13 +290,13 @@ read_title(FILE*f)
    fprintf(stderr,"EOF while reading article title\n");
    fprintf(stderr,"previous characters were `%s'\n",title_buf);
    report_pos();return-1;
-  }if(c=='\n')break;title_buf[n]=c;upcased_title_buf[n]=translit(c);
+  }if(c=='\n')break;title_buf[n]=c;upcased_title_buf[n]=c;
  }upcased_title_buf[n]=title_buf[n]=0;
  if(c!='\n')
  {fprintf(stderr,"title too long (more than %i bytes)\n",n);
   report_pos();return-3;
  }
- if(compare_previous)if(strcmp(prev_title_buf,upcased_title_buf)>0)
+ if(compare_previous)if(compare_titles(prev_title_buf,upcased_title_buf)>0)
  {fprintf(stderr,"unsorted articles found: `%s'>`%s'\n",
    prev_title_buf,upcased_title_buf);
   report_pos();
@@ -410,6 +427,11 @@ write_record_entries(FILE*f,unsigned long pos)
   byte_minor+=feature_bits_size;byte_minor+=record_number_size;
   byte_minor+=arity_number_size;byte_minor+=volume_number_size*2;
   byte_minor+=(ma+1)*record_number_size;
+  if(features&sort_table_bit)
+  {int n=strlen(sort_order);if(n&1)n++;
+   byte_minor+=n+sort_table_length
+    +sort_string_length_size+sort_table_length_size;
+  }
   byte_minor+=strlen(comment_string);
   first_record_size=byte_minor-pos0;
   if(verbous)printf("record 0 length %lu",byte_minor-pos0);
@@ -482,6 +504,13 @@ write_records(FILE*db)
           "primary start %u\n",ma,1,0,1,cur_rec);
   for(i=0;i<ma-1;i++)
   {cur_rec+=current_indices[i].records+1;write_hu(db,cur_rec);}
+  if(features&sort_table_bit)
+  {int n=strlen(sort_order);if(n&1)n++;
+   write_hu(db,n);write_hu(db,sort_table_length);
+   for(i=0;sort_order[i];i++)fputc_counted(sort_order[i],db);
+   if(i<n)fputc_counted(0,db);
+   for(i=0;i<sort_table_length;i++)fputc_counted(sort_table[i],db);
+  }
   for(i=0;comment_string[i];i++)fputc_counted(comment_string[i],db);
   if(verbous)
    printf("record 0 %lu/ %lu(%u)\n",out_cnt_minor,
@@ -562,28 +591,66 @@ write_content_record(unsigned caput)
  }return 0;
 }
 static int
-read_comments(FILE*f)
-{int c,caput=0;
+assign_sort_table(void)
+{static const char default_order[]=
+  "aA bB cC dD eE fF gG hH iI jJ kK lL mM\n"
+  "nN oO pP qQ rR sS tT uU vV wW xX yY zZ";
+ int i,assigned=1;char*s=sort_order;
+ if(*s)
+ {features|=sort_table_bit;
+  printf("Note: sort_table bit is set\n");
+ }else
+ {features&=~sort_table_bit;
+  printf("Note: sort_table bit is cleared\n");
+  strcpy(sort_order,default_order);
+ }
+ fprintf(stderr,"sort order `%s'\n",s);
+ for(i=0;s[i];i++)
+ {while((!i||s[i-1]=='\n')&&s[i]==' ')while(s[++i]&&s[i-1]!='\n');
+  if(s[i]==' '||s[i]=='\n'){assigned++;if(s[i]==' ')while(s[++i]==' ');}
+  if(s[i]&&s[i]!='\n')
+   sort_table[sort_table_mask&(unsigned char)(s[i])]=assigned;
+ }
+ for(i=1;i<sort_table_length;i++)if(sort_table[i])
+  sort_table[i]+=sort_table_length-assigned-1;
+ assigned=0;
+ for(i=1;i<sort_table_length;i++)if(!sort_table[i])
+  sort_table[i]=++assigned;
+ return 0;
+}
+static int
+read_preamble(FILE*f)
+{int c,*caput,ccaput=0,scaput=0,size;char*buf;*sort_order=0;
  while(1)
  {c=getc_counted(f);
-  if(c!='#')
-  {ungetc_counted(c,f);comment_string[caput-1]=0;
-   for(c=0;comment_string[c]&&comment_string[c]!='\n'
-    &&c<db_name_length;c++)
-    db_name[c]=comment_string[c];
-   if(!c)strcpy(db_name,default_db_name);
-   return 0;
+  if(c!='#'&&c!=' ')
+  {ungetc_counted(c,f);
+   if(ccaput)
+   {comment_string[ccaput-1]=0;
+    for(c=0;comment_string[c]&&comment_string[c]!='\n'&&c<db_name_length;c++)
+     db_name[c]=comment_string[c];
+    if(!c)strcpy(db_name,default_db_name);
+   }else strcpy(db_name,default_db_name);
+   if(scaput)sort_order[scaput-1]=0;
+   return assign_sort_table();
   }
+  if('#'==c){caput=&ccaput;buf=comment_string;size=sizeof comment_string;}
+  else{caput=&scaput;buf=sort_order;size=sizeof sort_order;}
   do
   {c=getc_counted(f);
    if(EOF==c)
-   {fprintf(stderr,"unexpected EOF in comments\n");
+   {fprintf(stderr,"unexpected EOF in preamble\n");
     report_pos();return!0;
    }
    if(!c)
-   {fprintf(stderr,"NULL character in comments\n");
+   {fprintf(stderr,"NULL character in preamble\n");
     report_pos();return!0;
-   }comment_string[caput++]=c;
+   }buf[(*caput)++]=c;
+   if(1+*caput>=size)
+   {fprintf(stderr,"too long %s block (should be less than %i)\n",
+     buf==comment_string?"comment":"sort order",size);
+    return!0;
+   }
   }while(c!='\n');
  }return!0;
 }
@@ -595,7 +662,7 @@ count_content_records(void)
  {fprintf(stderr,"can't open file `%s' for reading\n",txt_name);
   return-1;
  }
- if(read_comments(f))return-1;
+ if(read_preamble(f))return-1;
  while((n=read_article(f))>0)
  {articles++;if(max_article_observed<n)max_article_observed=n;
   if(n+caput+additional_stuff(art_in_record+1)>=record_length)
@@ -631,13 +698,7 @@ close_all(void)
  if(prev_title_buf){free(prev_title_buf);prev_title_buf=0;}
  if(upcased_title_buf)
  {free(upcased_title_buf);upcased_title_buf=0;}
-}static void
-init_translit_table(void)
-{int i;
- for(i=0;i<sizeof default_translit_table;i++)
-  default_translit_table[i]=tolower(i);
-}
-static int
+}static int
 parse_args(int argc,char**argv)
 {char*s;argc--;argv++;
  while(argc)
@@ -705,8 +766,10 @@ main(int argc,char**argv)
  {int vex=0;unsigned f_=features;printf(" (");
   if(compression_bit&f_)
   {vex=!0;printf("compressed");f_&=~compression_bit;}
-  if(upcoding_table_bit&f_)
-  {if(vex)printf(" ");printf("upcoding");f_&=~upcoding_table_bit;}
+  if(sort_table_bit&f_)
+  {if(vex)printf(" ");printf("sort_table(ignored)");
+   f_&=~sort_table_bit;vex=!0;
+  }
   if(f_){if(vex)printf(" ");printf("[unknown]");}
   printf(")");
  }printf("\n");
@@ -737,7 +800,6 @@ main(int argc,char**argv)
  {printf("can't allocate %u chars for title buffer\n",max_title+1);
   ret=3;goto exit;
  }
- init_translit_table();
  if(init_indices())goto exit;
  if(!(content_file=fopen(content_file_name,"wb")))
  {fprintf(stderr,"can't open file `%s'\n",content_file_name);}

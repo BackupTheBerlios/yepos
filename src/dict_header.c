@@ -4,49 +4,30 @@
 #include"control_ids.h"
 #define NOZLIBDEFS
 #include<SysZLib.h>
-/* this is old stuff; to be deleted
-static int
-parse_header(int verbous)
-{char s[0x33];char*p;unsigned*up;int y=0,incy=11,i,j;
- record0=DmQueryRecord(current_db,0);
- if(!record0)return!0;p=MemHandleLock(record0);if(!p)return!0;
- rec0_size=MemPtrSize(p);
- up=(unsigned*)p;features=up;
- if(*features&~implemented_features_bits)
- {FrmAlert(Unimplemented_Alert_id);return!0;}
- if(*features&compression_bit&&!ZLibRef)
- {FrmAlert(No_Zlib_Alert_id);return!0;}
- record_size=up+1;ary=up+2;
- volumes=up+3;vol=up+4;ary_records=up+5;
- db_comment=(const char*)(ary_records+*ary+1);
- comment_size=rec0_size-(db_comment-p);
- if(!verbous)return 0;
- StrCopy(s,"Database ");j=StrLen(s);
- for(i=0;i<comment_size;i++,j++)
- {s[j]=db_comment[i];
-  if(s[j]=='\n')
-  {s[j]=0;WinDrawChars(s,StrLen(s),0,y);y+=incy;j=-1;}
+static unsigned char default_sort_table[sort_table_length];
+void
+init_default_sort_table(void)
+{static const char s[]=
+  "aA bB cC dD eE fF gG hH iI jJ kK lL mM\n"
+  "nN oO pP qQ rR sS tT uU vV wW xX yY zZ";
+ unsigned char*st=default_sort_table;
+ int i,assigned=1;
+ for(i=0;s[i];i++)
+ {while((!i||s[i-1]=='\n')&&s[i]==' ')
+   while(s[++i]&&s[i-1]!='\n');
+  if(s[i]==' '||s[i]=='\n'){assigned++;if(s[i]==' ')while(s[++i]==' ');}
+  if(s[i]&&s[i]!='\n')
+   st[(unsigned char)(s[i])&sort_table_mask]=assigned;
  }
- if(db_comment[i-1]!='\n')
- {s[j]=0;WinDrawChars(s,StrLen(s),0,y);y+=incy;}
- StrCopy(s,"features: ");StrIToH(s+StrLen(s),*features);
- StrCat(s,"; arity: ");StrIToA(s+StrLen(s),*ary);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- StrCopy(s,"content record size: ");
- StrIToA(s+StrLen(s),*record_size);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- StrCopy(s,"volumes: ");StrIToA(s+StrLen(s),*volumes);
- StrCat(s,"; current volume: ");StrIToA(s+StrLen(s),*vol);
- WinDrawChars(s,StrLen(s),0,y);y+=incy;
- for(i=0;i<=*ary;i++)
- {StrIToA(s,i);StrCat(s,"-ary records begin with ");
-  StrIToA(s+StrLen(s),ary_records[i]);
-  WinDrawChars(s,StrLen(s),0,y);y+=incy;
- }return 0;
-}*/
+ for(i=1;i<sort_table_length;i++)if(st[i])
+  st[i]+=sort_table_length-assigned-1;
+ assigned=0;
+ for(i=1;i<sort_table_length;i++)if(!st[i])
+  st[i]=++assigned;
+}
 static int
 load_dh(struct dict_header*d,unsigned card,LocalID id)
-{const char*p;unsigned rec0_size;const unsigned*up;if(!d)return!0;
+{const char*p;unsigned rec0_size,so;const unsigned*up;if(!d)return!0;
  d->db=DmOpenDatabase(card,id,dmModeReadOnly);
  if(!d->db){FrmAlert(Fail_Opening_Alert_id);return!0;}
  d->rec0=DmQueryRecord(d->db,0);if(!d->rec0)return!0;
@@ -58,7 +39,15 @@ load_dh(struct dict_header*d,unsigned card,LocalID id)
  {FrmAlert(No_Zlib_Alert_id);return!0;}
  d->record_size=up[1];d->ary=up[2];d->volumes=up[3];
  d->vol=up[4];d->ary_records=up+5;
- d->comment=(const char*)(d->ary_records+d->ary+1);
+ so=0;
+ if(d->features&sort_table_bit)
+ {const unsigned*sizes=d->ary_records+d->ary+1;
+  so=*sizes+sizes[1]+2;
+  d->sort_table=(const unsigned char*)(sizes+*sizes+2);
+  if(sort_table_length!=sizes[1])so=0;
+ }
+ if(!so)d->sort_table=default_sort_table;
+ d->comment=((const char*)(d->ary_records+d->ary+1))+so;
  d->comment_size=rec0_size-(d->comment-p);return 0;
 }int 
 load_dict_header(struct dict_header*d,unsigned card,LocalID id)

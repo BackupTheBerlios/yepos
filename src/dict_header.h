@@ -17,6 +17,13 @@ struct dict_header
 {DmOpenRef db;MemHandle rec0;
  unsigned features,record_size,ary,volumes,vol,comment_size;
  const unsigned*ary_records;const char*comment;
+ const unsigned char*sort_table;
 };
 int load_dict_header(struct dict_header*,unsigned card,LocalID id);
 void close_dict_header(struct dict_header*);
+void init_default_sort_table(void);
+enum dict_header_lengths
+{dh_bits_per_byte=8,
+ sort_table_length=1<<dh_bits_per_byte,
+ sort_table_mask=(1<<dh_bits_per_byte)-1
+};
