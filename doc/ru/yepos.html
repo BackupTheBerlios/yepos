@@ -26,16 +26,123 @@
 <a href="http://yepos.berlios.de/ru">Здесь
 русская домашняя страница</a> её находится.</p>
 <h2>Установка на Palm</h2>
-<ol><li>Удалите старую версию программы, если она установлена</li>
-<li>Установите библиотеку SysZLib.prc, если она не установлена.
+<ol><li>Установите библиотеку SysZLib.prc, если она не установлена.
 если вы её не установите, yepos не будет понимать сжатые базы данных.
 эту библиотеку можно установить и после установки yepos.
 SysZLib.prc найдёте в каталоге <strong>bin/extern</strong>.</li>
 <li>Установите файл yepos_ru.prc (русский, кодировка KOI8-R) или
 yepos_lat.prc (латинский) или yepos_en.prc (английский);
 эти файлы находятся в каталоге <strong>bin</strong> дистрибутивного архива</li>
-<li>Установите файлы баз данных словарей, какие пожелаете</li>
-</ol>
+<li>Установите файлы баз данных словарей, какие пожелаете</li></ol>
+<h2>Создание словарей</h2>
+<p>Проще всего словари делать под Unix или её имитацией.</p>
+<h3>Трансляция утилит</h3>
+<p>Все утилиты, кроме <strong>star2y.sed</strong>, написаны на C. перед выполнением
+их нужно оттранслировать компилятором C в соединении с библиотекой zlib.
+в каталоге <strong>util/</strong> есть файл <strong>Makefile</strong>,
+где отражены зависимости. там нет ничего сложного. в начале файла
+устанавливаются CFLAGS и LDFLAGS, подходящие для компилятора GNU.</p>
+<h3>yeposc</h3>
+<p>Программа <strong>yeposc</strong>&nbsp;&mdash; сборщик баз данных. она создаёт
+файл для Palmа. обычный вызов выглядит так:</p>
+<blockquote><code>yeposc -i intus.txt -o exitus.pdb -f 1</code></blockquote>
+<p>Аргументы программы таковы:
+<ul>
+<li><strong>-i intus.txt</strong> входной файл со списком словарных статей</li>
+<li><strong>-o exitus.pdb</strong> выходной файл базы данных PalmOS</li>
+<li><strong>-f 1</strong> это значит, базу данных нужно сжать с помощью zlib;
+если сказать <strong>-f 0</strong>, сжимать не будет</li>
+<li><strong>-t lng</strong> предельная длина заголовка статьи</li>
+<li><strong>-r lng</strong> предельная длина статьи</li>
+<li><strong>-x lng</strong> длина индексной записи</li></ul></p>
+<p>Длины задаются десятичными числами в байтах.</p>
+<h4>Формат файлов</h4>
+<p>Входной файл делится на преамбулу и список статей.</p>
+<p>В начале располагается преамбула; её строки начинаются с <em>#</em> или
+с пробела. те, что начинаются с <em>#</em>, становятся примечанием к базе данных,
+начинающиеся с пробела определяют алфавитный порядок символов.</p>
+<p>Первая строка примечаний определяет имя базы данных на Palmе.</p>
+<p>Алфавитный порядок определяют строки, начинающиеся с пробела. если в начале строки
+стоит два пробела, она становится примечанием к алфавитному порядку.
+такие строки сохраняются в базе данных, но игнорируются.
+сам порядок определяют группы символов, разделённые пробелами.
+буквы в одной группе считаются эквивалентными. отсутствующие символы ставятся
+в начале ряда, по одному в группе.</p>
+<p>За преамбулой следует список статей. статью образуют три строки, в первую заносят
+заголовок статьи, во вторую&nbsp;&mdash; грамматические отметки, которые
+показываются в полном режиме и опускаются в построчном, в третью&nbsp;&mdash;
+текст статьи.</p>
+<p>Например:</p>
+<p><pre>
+#lat2en.yepos
+#латинско-английский
+#список Whitakerа v. 1.97F
+#(общественное достояние)
+#взят 5 ноября 2008
+#с "http://www.erols.com/
+#whitaker/dictpage.zip"
+  это --- порядок латинского алфавита,
+  такой же, какой используется программами,
+  когда порядок не задан
+ aA bB cC dD eE fF gG hH iI jJ kK lL mM
+ nN oO pP qQ rR sS tT uU vV wW xX yY zZ
+a
+  INTERJ
+Ah!
+a
+  PREP  ABL
+by (agent), from; after
+A
+., abb.  N M
+Aulus (Roman praenomen)
+</pre></p>
+<h3>ysort</h3>
+<p><strong>ysort</strong> сортирует статьи по алфавиту.
+преамбула сохраняется. вызывается так (intus.txt&nbsp;&mdash; входной файл,
+exitus.txt&bnsp;&mdash; выходной):</p>
+<blockquote><code>ysort intus.txt exitus.txt</code></blockquote>
+<p>Этой утилитой следует обрабатывать данные перед <strong>yeposc</strong>.</p>
+<h3>dict2y</h3>
+<p><strong>dict2y</strong> преобразовывает словари DICT. она работает с
+программой <strong>dictunformat</strong> из дистрибутива <strong>dictd</strong>
+следующим образом:
+<blockquote><code>
+dictunformat serb2croat.index &lt;serb2croat.dict
+| dict2y &gt;serb2croat.txt</code></blockquote>
+где serb2croat.index&nbsp;&mdash; индексный файл базы данных DICT;
+serb2croat.dict&nbsp;&mdash; распакованная база данных DICT. распаковывать можно
+с помощью <strong>gzip</strong>:</p>
+<blockquote><code>gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict</code></blockquote>
+<h3>star2y.sed</h3>
+<p><strong>star2y.sed</strong>&nbsp;&mdash; программа для <strong>sed</strong>;
+она преобразует словари
+<a href="http://sourceforge.net/projects/stardict">stardict</a>
+а формат <strong>yeposc</strong>. для этого нужно установить stardict-utils.
+эти утилиты содержат программу <strong>stardict2txt</strong>, которой мы будем воспользуемся.
+словари <strong>stardict</strong> приходят в виде архива <em>.tar.bz2</em>; в архиве
+находятся файлы <em>.dict.dz</em>, <em>.ifo</em> и <em>.idx</em>. 
+<em>.dict.dz</em> нужно распаковать, это может <strong>gzip</strong>:</p>
+<blockquote><code>
+  gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict
+</code></blockquote>
+<p>Затем извлекается список статей:</p>
+<blockquote><code>stardict2txt serb2croat.ifo</code></blockquote>
+<p>Это создаст файл serb2croat.txt, который преобразуется в формат
+<strong>yeposc</strong>:</p>
+<blockquote>
+ <code>sed -f star2y.sed &lt;serb2croat.txt &gt;s2c_y.txt</code>
+</blockquote>
+<p>После этого в начале s2c_y.txt нужно приписать преамбулу.</p>
+<h3>deyepos</h3>
+<p>Восстанавливает исходный текст базы данных по файлу, созданному <strong>yeposc</strong>.
+вызов:
+<blockquote><code>deyepos voc.pdb voc.txt</code></blockquote>
+</p>
+<h3>Преобразование кодировок</h3>
+<p>Если пользоваться нелатинскими символами, может потребоваться изменить кодировку.
+это можно делать разными программами, например, GNU <strong>iconv</strong>.
+разумеется, преобразовывать нужно входной файл <strong>yeposc</strong>, а не
+созданную <strong>yeposc</strong> базу данных.</p>
 <h2>Кто</h2>
 <p>Автор программы и единственный обладатель исключительных издательских прав&nbsp;&mdash;
 Инеев &lt;ineiev@users.berlios.de&gt;, супер V 93.</p>
@@ -50,4 +157,4 @@ yepos_lat.prc (латинский) или yepos_en.prc (английский);
 они не являются частью yepos, но используются вместе с ней. Инеев не имеет
 никакого отношения к написанию программ из этих каталогов.</p>
 <hr>
-<p>Страница правлена 21 марта 2009</p></body></html>
+<p>Страница правлена 26 мая 2009</p></body></html>

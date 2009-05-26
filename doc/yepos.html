@@ -27,7 +27,7 @@ inutilium volutarum</li>
 <a href="http://yepos.berlios.de">hic pagina domestica</a> eius est.
 </p>
 <h2>Instructio in Palmam</h2>
-<ol><li>Remove editionem programmatis pristinam, si instructa est</li>
+<ol>
 <li>Instrue SysZLib.prc, si non instructa est. si non instrues, yepos datorum bases
 compressas non intelleget. SysZLib.prc etiam post yepos instrui potest.
 SysZLib.prc invenias in <strong>bin/extern</strong> directorio.</li>
@@ -35,6 +35,112 @@ SysZLib.prc invenias in <strong>bin/extern</strong> directorio.</li>
 aut yepos_ru.prc (Ruthenicum, KOI8-R codex) aut yepos_en.prc (Britannicum);
 quos scapos in <strong>bin</strong> directorio archivi distributionis invenias</li>
 <li>Instrue vocabulariorum datorum bases quas vis</li></ol>
+<h2>Vocabularia creanda</h2>
+<p>Vocabularia creanda facillime sunt sub Unice aut simulatione eius.</p>
+<h3>Utilitates translandae</h3>
+<p>Utilitates omnes praeter <strong>star2y.sed</strong> in C scriptae sunt. ut eas incitare possis,
+translandae C compilatro sunt, quid compilatrum cum zlib coniunctum sit.
+in <strong>util/</strong> est <strong>Makefile</strong> scapus dependendentiones
+declarans. eae simplicissimae sunt. in initio CFLAGS et LDFLAGS
+pro GNU compilatro adscriptae sunt.</p>
+<h3>yeposc</h3>
+<p><strong>yeposc</strong> est datorum basium compilatrum. id scapum pro Palma creat. haec invocatio
+communis est:</p>
+<blockquote><code>yeposc -i intus.txt -o exitus.pdb -f 1</code></blockquote>
+<p>Argumenta programmatis sunt:
+<ul>
+<li><strong>-i intus.txt</strong> scapus intrans cum articulorum conscriptione</li>
+<li><strong>-o exitus.pdb</strong> PalmOS datorum basis extrans</li>
+<li><strong>-f 1</strong> haec designat datorum basis comprimenda est zlib auxilio;
+si <strong>-f 0</strong> dicas, eam non comprimet</li>
+<li><strong>-t lng</strong> longitudo nominis articuli longissimi</li>
+<li><strong>-r lng</strong> longitudo articuli longissimi</li>
+<li><strong>-x lng</strong> longitudo indicis</li></ul></p>
+<p>Longitudines sunt numeri litterarum digitis decimalibus expressae.</p>
+<h4>Scaporum forma</h4>
+<p>Scapus intrans in praeambulam et articulorum conscriptionem divisus est.</p>
+<p>Praeambula prima posita sit; lineae eius aut in <em>#</em> aut
+in spatium incipiuntur. quae in <em>#</em>, commentarium datorum basis erint,
+qui in spatium, ordinem litteris in alphabeto definiunt.</p>
+<p>Prima linea commentariorum nomen datorum basis in Palma definit.</p>
+<p>Litterarum ordo lineis in spatium definitur. lineae in spatia dua
+sunt commentaria ordinis. hae in datorum basem includuntur, sed ignorantur.
+ordo autem ipse est litterarum coniunctiones disiunctae spatiis.
+litterae inter spatia equivalentes sunt. litterae absentes ponuntur ante
+ordinem, sicut in linea essent <em>"\1 \2 \3 \4 \5"</em> (<em>\1</em> est
+littera cum codice 1, <em>\2</em> est littera cum codice 2 etc).</p>
+<p>Praeambulam articulorum consctiptio sequitur. articulum lineae tres faciunt,
+prima nomen articuli, secunda nota grammatica, quae in pleno modo yepos
+monstrat, in breve amittit, tertia articuli corpus est.</p>
+<p>Haec est exemplum:</p>
+<p><pre>
+#lat2en.yepos
+#Latina-Anglica
+#Whitakeri conscriptio v. 1.97F
+#(dominium publicum)
+#accepta Nonis Nov 2008
+#de "http://www.erols.com/
+#whitaker/dictpage.zip"
+  haec est litterarum Latinarum ordo
+  non dissimilis eo quod programmata
+  utuntur cum nullus ordo eis datus est
+ aA bB cC dD eE fF gG hH iI jJ kK lL mM
+ nN oO pP qQ rR sS tT uU vV wW xX yY zZ
+a
+  INTERJ
+Ah!
+a
+  PREP  ABL
+by (agent), from; after
+A
+., abb.  N M
+Aulus (Roman praenomen)
+</pre></p>
+<h3>ysort</h3>
+<p><strong>ysort</strong> articulos de scapo, ut ordo postulat, disponat.
+praeambula conservatur. invocatio est</p>
+<blockquote><code>ysort intus.txt exitus.txt</code></blockquote>
+<p>Haec utilitas ante <strong>yeposc</strong> appellanda est.</p>
+<h3>dict2y</h3>
+<p><strong>dict2y</strong> DICT vocabularia transformat. ea cum <strong>dictunformat</strong>
+de <strong>dictd</strong> distributione laborat, hoc modo:
+<blockquote><code>
+dictunformat serb2croat.index &lt;serb2croat.dict
+| dict2y &gt;serb2croat.txt</code></blockquote>
+ubi serb2croat.index DICT datorum basis indicis scapus est;
+serb2croat.dict DICT decompressum datorum basis est. decomprimi
+autem potest via <strong>gzip</strong>:</p>
+<blockquote><code>gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict</code></blockquote>
+<h3>star2y.sed</h3>
+<p><strong>star2y.sed</strong> programma pro <strong>sed</strong> est; hoc translat 
+<a href="http://sourceforge.net/projects/stardict">stardict</a> vocabularia
+in <strong>yeposc</strong> formam. ut id agas, strue stardict-utils in machina tua.
+hae utilitates includunt programma <strong>stardict2txt</strong>, quod utemur.
+<strong>stardict</strong> vocabularia in archivi forma <em>.tar.bz2</em>
+veniunt; in archivo
+invenias scapos in <em>.dict.dz</em>, <em>.ifo</em> et <em>.idx</em>. 
+<em>.dict.dz</em> decomprimendum est, <strong>gzip</strong> id faciat:</p>
+<blockquote><code>
+  gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict
+</code></blockquote>
+<p>Tum conscriptionem exponas:</p>
+<blockquote><code>stardict2txt serb2croat.ifo</code></blockquote>
+<p>Hoc serb2croat.txt creabit, quem in formam
+pro <strong>yeposc</strong> traducas:</p>
+<blockquote>
+ <code>sed -f star2y.sed &lt;serb2croat.txt &gt;s2c_y.txt</code>
+</blockquote>
+<p>Post hoc praeambulam in initio s2c_y.txt scribas.</p>
+<h3>deyepos</h3>
+<p>Regenerat fons de datorum base a <strong>yeposc</strong> creata. dic demum
+<blockquote><code>deyepos voc.pdb voc.txt</code></blockquote>
+</p>
+<h3>Codices mutandi</h3>
+<p>Si litteras non-Latinas uteris, necessitas codicem translare fieri potest.
+hoc multis programmatis facere potes, exempli gratia GNU <strong>iconv</strong>.
+quippe, scapus translandus est quod <strong>yeposc</strong> procedat, non
+datorum basis quod <strong>yeposc</strong> creavit.
+</p>
 <h2>Quis</h2>
 <p>Auctor est Ineiev &lt;ineiev@users.berlios.de&gt;, super V 93.</p>
 <blockquote>NB auctor summi iniurii loco habet ius auctorum programmatorum
@@ -47,5 +153,5 @@ programmata continent externa; ei pars
 huius programmatis non sunt, sed auxilium huic faciunt.
 Ineiev nullius rei de his directoriis auctor est.</p>
 <hr>
-<p>Haec pagina mutata est ante diem septimum decimum Idus Apriles anno MMDCCLXII ab urbe condita</p>
+<p>Haec pagina mutata est ante diem septimum Kalendas Iunias anno MMDCCLXII ab urbe condita</p>
 </body></html>

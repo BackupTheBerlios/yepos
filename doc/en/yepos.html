@@ -24,7 +24,7 @@ no form titles, no fancy buttons, no other non-functional decorations</li>
 <a href="http://yepos.berlios.de/en">here is it's
 English homepage</a>.</p>
 <h2>Installation on Palm</h2>
-<ol><li>Remove the previous version of the program, if it has been installed</li>
+<ol>
 <li>Install SysZLib.prc, if it has not been yet.
 if you don't install it, yepos won't understand compressed databases.
 you may install SysZLib.prc after yepos.
@@ -34,6 +34,108 @@ yepos_ru.prc (Russian, KOI8-r encoding);
 you can find these files in <strong>bin</strong> directory
 of the distributed archive.</li>
 <li>Install databases for dictionaries you want</li></ol>
+<h2>Creating dictionaries</h2>
+<p>Here is described how to create dictionaries under Unix or her emulations.</p>
+<h3>Building utilities</h3>
+<p>All utilities except <strong>star2y.sed</strong> are written in C. in order to be run,
+they should be translated with a C compiler, zlib being augmented.
+There is <strong>Makefile</strong> in <strong>util/</strong> which declares the dependencies.
+they are quite simple. in begin CFLAGS and LDFLAGS suitable for GNU compilers are assigned.</p>
+<h3>yeposc</h3>
+<p><strong>yeposc</strong> is database compiler. it creates files for Palm. here is it's usual
+invocation:</p>
+<blockquote><code>yeposc -i input.txt -o output.pdb -f 1</code></blockquote>
+<p>The arguments are:
+<ul>
+<li><strong>-i input.txt</strong> input file with a list of articles</li>
+<li><strong>-o output.pdb</strong> output PalmOS database</li>
+<li><strong>-f 1</strong> this means the database should be compressed with zlib;
+if you say <strong>-f 0</strong>, it won't compress</li>
+<li><strong>-t lng</strong> maximum size of article title</li>
+<li><strong>-r lng</strong> maximum article size</li>
+<li><strong>-x lng</strong> size of index records</li></ul></p>
+<p>Sizes are decimal number signifying lengths in bytes.</p>
+<h4>File format</h4>
+<p>Input file is divided into preamble and list of articles.</p>
+<p>The preamble is placed at the beginning; it's lines begin with <em>#</em> or
+with a space. those beginning with <em>#</em> will make the database comment,
+those beginning with a space will define the alphabetic order.</p>
+<p>First line of the comment defines the database name in Palm.</p>
+<p>The alphabetic order is defined by the lines beginning with a space. the lines beginning
+with two spaces are comments for the order. they are included into the database
+but ignored. the order is defined as character groups separated with spaces.
+the characters between spaces are equivalent. the absent characters are
+considered to come before all the mentioned ones.</p>
+<p>The preamble is followed by the list of articles. every three lines form an article,
+the first contains the title, the second is a grammatical note, which is shown
+in the full mode and omitted in the per-line one, the third line is the body.</p>
+<p>Here is an example:</p>
+<p><pre>
+#lat2en.yepos
+#Latin-English
+#Whitaker word list v. 1.97F
+#(public domain)
+#retrieved 5 Nov 2008
+#from "http://www.erols.com/
+#whitaker/dictpage.zip"
+  this is Latin alphabet order
+  the same as default used 
+  when no order is given
+ aA bB cC dD eE fF gG hH iI jJ kK lL mM
+ nN oO pP qQ rR sS tT uU vV wW xX yY zZ
+a
+  INTERJ
+Ah!
+a
+  PREP  ABL
+by (agent), from; after
+A
+., abb.  N M
+Aulus (Roman praenomen)
+</pre></p>
+<h3>ysort</h3>
+<p><strong>ysort</strong> sorts the articles alphabetically. the preamble is preserved.
+the invocation is</p>
+<blockquote><code>ysort input.txt output.txt</code></blockquote>
+<p>This utility should be run before <strong>yeposc</strong>.</p>
+<h3>dict2y</h3>
+<p><strong>dict2y</strong> transforms DICT databases. it works with <strong>dictunformat</strong>
+from <strong>dictd</strong> distribution, this way:
+<blockquote><code>
+dictunformat serb2croat.index &lt;serb2croat.dict
+| dict2y &gt;serb2croat.txt</code></blockquote>
+where serb2croat.index is DICT database index file;
+serb2croat.dict is decompressed DICT database. it can be decompressed with
+<strong>gzip</strong>:</p>
+<blockquote><code>gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict</code></blockquote>
+<h3>star2y.sed</h3>
+<p><strong>star2y.sed</strong> is a <strong>sed</strong> script; it tranforms
+<a href="http://sourceforge.net/projects/stardict">stardict</a> dictionaries
+into <strong>yeposc</strong> format. to do this, install stardict-utils in your computer.
+these utilities include <strong>stardict2txt</strong>, which we shall use.
+<strong>stardict</strong> dictionaries come in <em>.tar.bz2</em> archives; in those archives
+you can see files <em>.dict.dz</em>, <em>.ifo</em> et <em>.idx</em>. 
+<em>.dict.dz</em> should be decompressed, <strong>gzip</strong> can do it:</p>
+<blockquote><code>
+  gzip -dc &lt;serb2croat.dict.dz &gt;serb2croat.dict
+</code></blockquote>
+<p>Then extract the list of articles:</p>
+<blockquote><code>stardict2txt serb2croat.ifo</code></blockquote>
+<p>This creates serb2croat.txt, which you can convert into
+<strong>yeposc</strong> format:</p>
+<blockquote>
+ <code>sed -f star2y.sed &lt;serb2croat.txt &gt;s2c_y.txt</code>
+</blockquote>
+<p>After that write a preamble in the beginning of s2c_y.txt.</p>
+<h3>deyepos</h3>
+<p>Regenerates the source of a database created with <strong>yeposc</strong>. just say
+<blockquote><code>deyepos voc.pdb voc.txt</code></blockquote>
+</p>
+<h3>Converting encodings</h3>
+<p>If you use non-Latin letters, you may need to convert the encodings.
+this can be done with many programs, e.g. GNU <strong>iconv</strong>.
+naturally, it is <strong>yeposc</strong> input file that should be converted rather than
+it's output.</p>
 <h2>Who</h2>
 <p>The author and copyright holder is
 Ineiev &lt;ineiev@users.berlios.de&gt;, super V 93.</p>
@@ -47,4 +149,4 @@ it would be generally unjust.</blockquote>
 extern programs; they are not a part
 of yepos, but are used with it. Ineiev has nothing to do with their
 authorship and copyright.</p>
-<hr><p>Modified 21 Mar 2009</p></body></html></body></html>
+<hr><p>Modified 26 May 2009</p></body></html></body></html>
