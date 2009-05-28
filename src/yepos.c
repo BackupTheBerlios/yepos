@@ -18,7 +18,7 @@ enum local_constants
  log2_cache_length=4,cache_length=1<<log2_cache_length,
  cache_length_mask=cache_length-1,list_mode_inc_value=7
 };
-enum local_defines{facunde=0,tempora_dic=1,zlib_irrobust=1};
+enum local_defines{facunde=0,tempora_dic=0,zlib_irrobust=0};
 static void
 draw_chars(const char*s,int x,int y)
 {if(facunde)WinDrawChars(s,StrLen(s),x,y);

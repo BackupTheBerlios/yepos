@@ -8,6 +8,7 @@
 #include"prefs.h"
 #include"show_battery.h"
 enum local_constants{info_line_inc=4};
+enum debug_constants{facunde=0};
 static int upper_db,selected,change_flag,info_line_no,comment_top_reached;
 static struct dict_header dh;
 static ControlType*
@@ -96,6 +97,7 @@ on_enter(void)
  show_buttons(f);FrmDrawForm(f);show_battery(!0);
  at_close_app(return_from_settings);
  if(!load_selected_header())show_selected_database(f);
+ if(facunde)
  {char s[17];StrIToA(s,TimGetTicks()-tic);
   WinDrawChars(s,StrLen(s),screen_width-StrLen(s)*5-2,-2);
  }change_flag=info_line_no=0;
