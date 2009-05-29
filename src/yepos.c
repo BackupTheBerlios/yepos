@@ -202,9 +202,7 @@ compare_item(const char*a,const char*b,int n)
  {if(sort_weight(*a)>sort_weight(*b))return 1;
   if(sort_weight(*a)<sort_weight(*b))return-1;
  }
- if(sort_weight(*a)>sort_weight(*b))return 1;
- if(sort_weight(*a)<sort_weight(*b))return-1;
- return 0;
+ if(!*a)return 0;return 1;
 }
 enum bisect_result
 {less_than_minus,more_than_plus,bisect_returns_range,bisect_error,
