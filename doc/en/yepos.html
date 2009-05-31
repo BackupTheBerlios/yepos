@@ -34,6 +34,11 @@ yepos_ru.prc (Russian, KOI8-r encoding);
 you can find these files in <strong>bin</strong> directory
 of the distributed archive.</li>
 <li>Install databases for dictionaries you want</li></ol>
+<h2>Usage</h2>
+<p>The program has two forms. in the first one the words are listed; in the line
+at the bottom you can write the word to search; when you tap the form title, yepos
+toggles the mode between full and per-line. &lt;Menu&lt; button will fetch the second form,
+where one can select dictionary databases.</p>
 <h2>Creating dictionaries</h2>
 <p>Here is described how to create dictionaries under Unix or her emulations.</p>
 <h3>Building utilities</h3>
@@ -60,7 +65,8 @@ if you say <strong>-f 0</strong>, it won't compress</li>
 <p>The preamble is placed at the beginning; it's lines begin with <em>#</em> or
 with a space. those beginning with <em>#</em> will make the database comment,
 those beginning with a space will define the alphabetic order.</p>
-<p>First line of the comment defines the database name in Palm.</p>
+<p>The first line of the comment defines the database name in Palm;
+the second will be the window title.</p>
 <p>The alphabetic order is defined by the lines beginning with a space. the lines beginning
 with two spaces are comments for the order. they are included into the database
 but ignored. the order is defined as character groups separated with spaces.
