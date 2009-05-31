@@ -29,8 +29,8 @@ static struct dict_header dh;
 static unsigned zlib_buf_size;static char*zlib_buf;
 const char*
 get_db_comment(int*size){if(size)*size=dh.comment_size;return dh.comment;}
-MemHandle idx_handles[2];
-static const char*uncompressed;char*indices[2];
+MemHandle idx_handles[3];char*indices[3];
+static const char*uncompressed;
 static unsigned current_article,current_content_record=1;
 struct cache_item
 {int db_idx;unsigned rec_num;struct mem_chunk chunk;
@@ -206,7 +206,7 @@ compare_item(const char*a,const char*b,int n)
 }
 enum bisect_result
 {less_than_minus,more_than_plus,bisect_returns_range,bisect_error,
- bisect_try_next=1<<(sizeof(unsigned)*bits_per_byte-1)
+ bisect_try_neighbour=1<<(sizeof(unsigned)*bits_per_byte-1)
 };
 static enum bisect_result
 bisect(const char*title,int title_len,
@@ -219,7 +219,6 @@ bisect(const char*title,int title_len,
   StrIToA(s,minus);StrCat(s,":");StrIToA(s+StrLen(s),cmp);
   StrCat(s,"   ");draw_chars(s,0,28);
   draw_chars(indices[1]+items[minus*3+2],0,40);
-  draw_chars(indices[1]+items[(minus+1)*3+2],80,40);
  }
  if(cmp<0){*lower=*upper=minus;return less_than_minus;}
  cmp=compare_item(title,indices[1]+items[plus*3+2],title_len);
@@ -243,7 +242,7 @@ bisect(const char*title,int title_len,
    StrCat(s,"     ");draw_chars(s,0,52);
   }
  }while(plus>minus+1);
- item=minus;if(!cmpp)item|=bisect_try_next;*lower=item;
+ item=minus;if(!cmpp)item|=bisect_try_neighbour;*lower=item;
  /*minus=mixime;plus=maxime;
  item=(plus+(unsigned long)minus)>>1;
  while(plus-1>minus)
@@ -257,24 +256,25 @@ bisect_article(const char*title,int title_len,
  unsigned*lower,unsigned*upper)
 {unsigned plus=articles_number()-1,minus=0,item,maxime,mixime;
  const unsigned*items=((const unsigned*)uncompressed)+1;
- int cmp,vex=!0,cmpp,cmpm;enum bisect_result r=bisect_error;
+ int cmp,vex=!0,cmpp,cmpm,prev_vex;enum bisect_result r=bisect_error;
  cmp=compare_item(title,uncompressed+items[minus],title_len);
  if(cmp<0)
  {*lower=*upper=minus;r=less_than_minus;
   draw_chars("ltm",80,64);
   return r;
- }cmpm=cmp;
- draw_chars(uncompressed+items[plus],70,76);draw_chars("arti",140,76);
+ }cmpm=cmp;prev_vex=!cmpm;
+ draw_chars(uncompressed+items[minus],0,76);
+ draw_chars(uncompressed+items[plus],80,76);
  cmp=compare_item(title,uncompressed+items[plus],title_len);cmpp=cmp;
  if(cmp>0)
  {*lower=*upper=plus;r=more_than_plus;
-  draw_chars("mtp",80,76);
+  draw_chars("mtp",80,64);
   return r;
  }maxime=mixime=plus;
  do
  {item=(plus+(unsigned long)minus)>>1;
   cmp=compare_item(title,uncompressed+items[item],title_len);
-  if(cmp>0){minus=item;cmpm=cmp;}else
+  if(cmp>0){minus=item;cmpm=cmp;prev_vex=0;}else
   {if(cmp<0)maxime=item;cmpp=cmp;
    plus=item;if(vex&&!cmp){vex=0;mixime=item;}
   }
@@ -286,7 +286,8 @@ bisect_article(const char*title,int title_len,
    StrCat(s,":");StrIToA(s+StrLen(s),plus);
    StrCat(s,"     ");draw_chars(s,0,52);
   }
- }while(plus>minus+1);if(!cmpp)item=plus;else item=minus;
+ }while(plus>minus+1);if(!cmpp&&cmpm)item=plus;else item=minus;
+ if(prev_vex)item|=bisect_try_neighbour;
  *lower=item;minus=mixime;plus=maxime;
  /*while(plus-1>minus)
  {cmp=compare_item(title,uncompressed+items[item],title_len);
@@ -325,13 +326,16 @@ find_article(const char*title)
   {char s[0x33];StrCopy(s,"ary ");StrIToA(s+StrLen(s),arity);
    StrCat(s,"   ");draw_chars(s,0,0);
   }
-  unlock_handle(idx_handles+1);
+  unlock_handle(idx_handles+2);
+  idx_handles[2]=idx_handles[1];indices[2]=indices[1];
   idx_handles[1]=*idx_handles;indices[1]=*indices;
   r=bisect(title,title_len,&lower,&upper);
   switch(r)
   {case more_than_plus:
-    if(try_next)
+    if(try_next&&idx_handles[2])
     {MemHandle h=idx_handles[1];MemPtr ptr=indices[1];unsigned low,up;
+     draw_chars(" tn ",140,64);
+     idx_handles[1]=idx_handles[2];indices[1]=indices[2];
      idx_handles[1]=DmQueryRecord(dh.db,
       idx_items_array()[(prev_lower+1)*3+1]);
      indices[1]=MemHandleLock(idx_handles[1]);
@@ -344,7 +348,7 @@ find_article(const char*title)
     }/*fall through*/
    case less_than_minus:/*??? rare case*/
    case bisect_returns_range:
-    try_next=lower&bisect_try_next;lower&=~bisect_try_next;
+    try_next=lower&bisect_try_neighbour;lower&=~bisect_try_neighbour;
     *idx_handles=DmQueryRecord(dh.db,idx_items_array()[lower*3+1]);
     *indices=MemHandleLock(*idx_handles);
     break;
@@ -354,7 +358,7 @@ find_article(const char*title)
  }if(decompress_content(idx_items_array()[lower*3+1]))goto exit;
  current_content_record=idx_items_array()[lower*3+1];
  prev_lower=lower;r=bisect_article(title,title_len,&lower,&upper);
- current_article=lower&~bisect_try_next;
+ current_article=lower&~bisect_try_neighbour;
  if(more_than_plus==r&&try_next
   &&current_content_record+1<first_record(1))
  {MemHandle h=*idx_handles;MemPtr ptr=*indices;int cmp;const unsigned*items;
@@ -370,11 +374,28 @@ find_article(const char*title)
   cmp=compare_item(title,uncompressed+*items,title_len);
   if(cmp)
   {MemHandle h0=*idx_handles;*idx_handles=h;h=h0;
-   if(compression_bit&dh.features)restore_uncompressed();
-   *indices=ptr;
+   restore_uncompressed();*indices=ptr;
   }else{current_content_record++;current_article=0;}
   discard_saved_uncompressed();MemHandleUnlock(h);
   draw_chars(uncompressed+*items,0,91);
+ }else while((lower&bisect_try_neighbour)&&!current_article
+  &&current_content_record>first_record(0))
+ {MemHandle h=*idx_handles;MemPtr ptr=*indices;
+  save_uncompressed();
+  *idx_handles=DmQueryRecord(dh.db,current_content_record-1);
+  *indices=MemHandleLock(*idx_handles);
+  if(decompress_content(current_content_record-1))
+  {restore_uncompressed();MemHandleUnlock(*idx_handles);
+   *indices=ptr;*idx_handles=h;goto exit;
+  }
+  r=bisect_article(title,title_len,&lower,&upper);
+  if(more_than_plus!=r)
+  {current_content_record--;
+   current_article=lower&~bisect_try_neighbour;
+  }else
+  {MemHandle h0=*idx_handles;*idx_handles=h;h=h0;
+   restore_uncompressed();*indices=ptr;
+  }discard_saved_uncompressed();MemHandleUnlock(h);
  }
 exit:
  if(tempora_dic)
