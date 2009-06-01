@@ -13,9 +13,16 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.*/
+#ifdef __STDC__
+#include<stdlib.h>
+#else
+#define const
+#endif
+#if NO_MALLOC_DECL
+extern char*malloc();
+#endif
 #include<stdio.h>
 #include<string.h>
-#include<stdlib.h>
 #include<zlib.h>
 #include"../include/signs.h"
 static const char THYNAME[]="deyepos";
@@ -24,39 +31,43 @@ enum local_constants
  db_name_length=32,creator_length=4,db_type_length=4,
  palm_ushort_size=2
 };
+#ifndef __DATE__
+#define __DATE__ "[some day]"
+#endif
 static void
-usage(void)
-{printf("%s 0.2 (built "__DATE__"): yepos database extractor\n"
- "Copyright (C) 2008 Ineiev<ineiev@users.berlios.de>, super V 93\n"
- "%s comes with NO WARRANTY, to the extent permitted by law.\n"
- "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
- "Usage: %s in_file_name out_file_name\n",
- THYNAME,THYNAME,THYNAME,THYNAME);
+usage()
+{printf("%s 0.2 (built %s): yepos database extractor\n",THYNAME,__DATE__);
+ printf("Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n");
+ printf("%s comes with NO WARRANTY, to the extent permitted by law.\n",
+  THYNAME);
+ printf("You may redistribute copies of %s under the terms of the GNU GPL v3+\n",
+  THYNAME);
+ printf("Usage: %s in_file_name out_file_name\n",THYNAME);
 }
 unsigned long byte_minor,byte_maior;
 static int
-getc_counted(FILE*f)
+getc_counted(f)FILE*f;
 {int c=getc(f);if(c!=EOF)if(!++byte_minor)++byte_maior;return c;}
 static int
-check_fopen(FILE**f,const char*n,const char*m)
+check_fopen(f,n,m)FILE**f;const char*n,*m;
 {*f=fopen(n,m);if(*f)return 0;fprintf(stderr,"can't open %s\n",n);return!0;}
 static unsigned short
-get_hu(FILE*f)
+get_hu(f)FILE*f;
 {return (getc_counted(f)<<bits_per_byte)|getc_counted(f);}
 static unsigned short
-sget_hu(char*s)
+sget_hu(s)char*s;
 {return ((((unsigned)s[0])&byte_mask)<<bits_per_byte)
   |(((unsigned)s[1])&byte_mask);
 }
 static unsigned long
-get_lu(FILE*f)
+get_lu(f)FILE*f;
 {return((unsigned long)(getc_counted(f))<<(bits_per_byte*3))
   |((unsigned long)(getc_counted(f))<<(bits_per_byte*2))
   |((unsigned long)(getc_counted(f))<<bits_per_byte)
   |getc_counted(f);
 }unsigned short rec_num;unsigned char*rec_list=0;
 void
-read_header(FILE*f)
+read_header(f)FILE*f;
 {unsigned long x=!0;int n;printf("Name: \"");
  for(n=0;n<db_name_length;n++)
  {int c=getc_counted(f);if(!c&&x)printf("\"( ");if(x)x=c;
@@ -79,22 +90,22 @@ read_header(FILE*f)
  printf("\nNumber of Records: %hu\n",rec_num=get_hu(f));
  if(feof(f)){fprintf(stderr,"end of file while reading header\n");rec_num=0;}
 }int
-get_rec_list(FILE*db)
+get_rec_list(db)FILE*db;
 {unsigned long i;
- if(!(rec_list=malloc(rec_num*8)))
+ if(!(rec_list=(unsigned char*)malloc(rec_num*8)))
  {fprintf(stderr,"can't allocate record list (%i records) in memory\n",rec_num);
   rec_num=0;return!0;
  }for(i=0;i<rec_num*8&&!feof(db);rec_list[i++]=getc_counted(db));
  if(feof(db))fprintf(stderr,"end of file while reading record list\n");
  return feof(db);
 }unsigned long
-get_rec_pos(unsigned short i)
+get_rec_pos(i)unsigned short i;
 {return((unsigned long)(rec_list[8*i])<<24)|
        ((unsigned long)(rec_list[8*i+1])<<16)|
        ((unsigned long)(rec_list[8*i+2])<<8)|rec_list[8*i+3];
 }static int verbous=0;
 int
-write_list(FILE*db,char*f)
+write_list(db,f)FILE*db;char*f;
 {int c;unsigned i,content_records;unsigned long pos,pos0;FILE*txt;
  char*uncompressed_record=0,*compressed_record=0,*parsed_record;
  unsigned features,record_size,compressed_record_size;int ret=0;
@@ -104,15 +115,16 @@ write_list(FILE*db,char*f)
  if(pos>pos0+2)
   printf("Note: rec. No 0 too far (%li bytes) from header end.",pos-pos0);
  if(pos<pos0)
- {printf("Note: rec. No 0 begins in the header.\n"
-         " The file is certainly not a PalmOS database.");return!0;
+ {printf("Note: rec. No 0 begins in the header.\n");
+  printf(" The file is certainly not a PalmOS database.");return!0;
  }
  for(i=1;i<rec_num;i++)
  {if(verbous)printf("Rec. No %u: %lu\n",i,pos=get_rec_pos(i));
   if(pos<pos0)
-   printf("Note: The record begins before the previous ends.\n"
-	  " I do not support databases with overlapping records.\n"
-	  " Is the file really a PalmOS database?\n");pos0=pos;
+  {printf("Note: The record begins before the previous ends.\n");
+   printf(" I do not support databases with overlapping records.\n");
+   printf(" Is the file really a PalmOS database?\n");
+  }pos0=pos;
  }pos=78+8*rec_num;pos0=get_rec_pos(0);
  while(pos<pos0)
  {getc_counted(db);pos++;printf("skip a byte\n");}
@@ -236,9 +248,9 @@ exit:
  fclose(txt);return ret;
 }
 void
-free_mem(void){if(rec_list)free(rec_list);}
+free_mem(){if(rec_list)free(rec_list);}
 int
-main(int argc,char**argv)
+main(argc,argv)int argc;char**argv;
 {FILE*db;usage();if(argc<3){fprintf(stderr,"wrong usage\n");return 1;}
  if(argc>3)verbous=!0;
  if(check_fopen(&db,argv[1],"rb"))return 2;byte_minor=byte_maior=0;

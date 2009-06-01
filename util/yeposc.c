@@ -13,10 +13,20 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.*/
+#ifdef __STDC__
+#include<stdlib.h>
+#else
+#define const
+#endif
+#if NO_MALLOC_DECL
+extern char*malloc();
+#endif
+#if NO_REMOVE
+/*we are hopefully building for an ancient Unix or alike*/
+#define remove unlink
+#endif
 #include<stdio.h>
 #include<string.h>
-#include<stdlib.h>
-#include<ctype.h>
 #include<zlib.h>
 #include"../include/signs.h"
 static const char THYNAME[]="yeposc",creator[]=CREATOR_STRING,
@@ -55,68 +65,73 @@ static const unsigned long max_records_per_db=65534;
 static unsigned long out_cnt_minor,out_cnt_maior;
 static int verbous;
 static int
-fputc_counted(int c,FILE*f)
+fputc_counted(c,f)int c;FILE*f;
 {int r=putc(c,f);if(!++out_cnt_minor)++out_cnt_maior;return r;}
 static void
-write_lu(FILE*f,unsigned long x)
+write_lu(f,x)FILE*f;unsigned long x;
 {fputc_counted((x>>(bits_per_byte*3))&byte_mask,f);
  fputc_counted((x>>(bits_per_byte*2))&byte_mask,f);
  fputc_counted((x>>bits_per_byte)&byte_mask,f);
  fputc_counted(x&byte_mask,f);
 }static void
-write_hu(FILE*f,unsigned short x)
+write_hu(f,x)FILE*f;unsigned short x;
 {fputc_counted((x>>bits_per_byte)&byte_mask,f);
  fputc_counted(x&byte_mask,f);
 }static void
-put_hu(char*s,unsigned short x)
+put_hu(s,x)char*s;unsigned short x;
 {*s=(x>>bits_per_byte)&byte_mask;s[1]=x&byte_mask;}
 static void
-write_name(FILE*f)
+write_name(f)FILE*f;
 {int i;const char*s=db_name;
  for(i=0;s[i];fputc_counted(s[i++],f));
  while(i++<db_name_length)fputc_counted(0,f);
 }
 static void
-write_attributes(FILE*f){write_hu(f,0);}
+write_attributes(f)FILE*f;{write_hu(f,0);}
 static void
-write_version(FILE*f){write_hu(f,VERSION);}
+write_version(f)FILE*f;{write_hu(f,VERSION);}
 static void
-write_creation_date(FILE*f){write_lu(f,17);}
+write_creation_date(f)FILE*f;{write_lu(f,17);}
 static void
-write_modification_date(FILE*f){write_lu(f,17);}
+write_modification_date(f)FILE*f;{write_lu(f,17);}
 static void
-write_last_backup_date(FILE*f){write_lu(f,17);}
+write_last_backup_date(f)FILE*f;{write_lu(f,17);}
 static void
-write_modification_number(FILE*f){write_lu(f,0);}
+write_modification_number(f)FILE*f;{write_lu(f,0);}
 static void
-write_app_info_id(FILE*f){write_lu(f,0);}
+write_app_info_id(f)FILE*f;{write_lu(f,0);}
 static void
-write_sort_info_id(FILE*f){write_lu(f,0);}
+write_sort_info_id(f)FILE*f;{write_lu(f,0);}
 static void
-write_type(FILE*f)
+write_type(f)FILE*f;
 {int i;for(i=0;i<db_type_length;i++)fputc_counted(db_type[i],f);}
 static void
-write_creator(FILE*f)
+write_creator(f)FILE*f;
 {int i;for(i=0;i<creator_length;i++)fputc_counted(creator[i],f);}
 static void
-write_unique_id_seed(FILE*f){write_lu(f,17);}
+write_unique_id_seed(f)FILE*f;{write_lu(f,17);}
 static void
-write_unique_id(FILE*f)
+write_unique_id(f)FILE*f;
 {static unsigned long id;unsigned long d=++id;
  fputc_counted(d&byte_mask,f);d>>=bits_per_byte;
  fputc_counted(d&byte_mask,f);d>>=bits_per_byte;
  fputc_counted(d&byte_mask,f);
 }
 static unsigned initial_index_length=default_initial_index_length;
+#ifndef __DATE__
+#define __DATE__ "[some day]"
+#endif
 static void
-usage(void)
-{printf("%s 0.2 (built "__DATE__"): yepos database compiler\n"
- "Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n"
- "%s comes with NO WARRANTY, to the extent permitted by law.\n"
- "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
- "Usage: %s -i in_file_name -o out_file_name\n"
- " [-r record_size] [-t max_title] [-f features] [-x index_record_size]\n",
- THYNAME,THYNAME,THYNAME,THYNAME);
+usage()
+{printf("%s 0.2 (built %s): yepos database compiler\n",THYNAME,__DATE__);
+ printf("Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n");
+ printf("%s comes with NO WARRANTY, to the extent permitted by law.\n",
+  THYNAME);
+ printf("You may redistribute copies of %s\n",THYNAME);
+ printf("under the terms of the GNU GPL v3+\n");
+ printf("Usage: %s -i in_file_name -o out_file_name\n",THYNAME);
+ printf(" [-r record_size] [-t max_title] [-f features]\n");
+ printf(" [-x index_record_size]\n");
 }
 static const char*txt_name,*out_name;
 static char*record_buf,*compressed_record_buf,*title_buf,
@@ -126,9 +141,9 @@ static unsigned char sort_table[sort_table_length];
 static FILE*content_file;
 static const char content_file_name[]="yepos.0";
 static void
-index_file_name(char*s,int i){sprintf(s,"yeposidx.%i",i);}
+index_file_name(s,i)char*s;int i;{sprintf(s,"yeposidx.%i",i);}
 /*File structures are arranged so that PalmOS executable
-can reference to the values directly from the locked chunk; this
+can refer to the values directly from the locked chunk; this
 means that all 2-byte fields are even-aligned within the record */
 /* content record structure:
  (PalmOS unsigned short) number of articles
@@ -196,10 +211,10 @@ static struct current_index_pointer
  char*buf;FILE*content;
 }current_indices[max_arity];
 static unsigned
-additional_index_stuff(unsigned items)
+additional_index_stuff(items)unsigned items;
 {return index_constant_header_size+items*index_increment_size;}
 static int
-init_indices(void)
+init_indices()
 {int i;struct current_index_pointer*ci;
  for(i=0,ci=current_indices;i<max_arity;i++,ci++)
  {char*p=malloc(initial_index_length);if(!p)return-1;
@@ -207,7 +222,7 @@ init_indices(void)
   ci->max_items=ci->caput=ci->items=ci->overall_items=ci->records=0;
  }return 0;
 }static void
-close_indices(void)
+close_indices()
 {int i;
  for(i=0;i<max_arity;i++)
  {struct current_index_pointer*ci=current_indices+i;
@@ -222,10 +237,10 @@ close_indices(void)
  {fclose(content_file);content_file=0;remove(content_file_name);}
 }
 static FILE*
-index_file(int i,const char*mode)
+index_file(i,mode)int i;const char*mode;
 {char s[0x22];index_file_name(s,i);return fopen(s,mode);}
 static int
-redopen_indicium_contents(void)
+redopen_indicium_contents()
 {unsigned i;
  for(i=0;i<max_arity;i++)
  {struct current_index_pointer*ci=current_indices+i;
@@ -246,15 +261,15 @@ redopen_indicium_contents(void)
  }return 0;
 }
 static int
-ungetc_counted(int c,FILE*f)
+ungetc_counted(c,f)int c;FILE*f;
 {int r=ungetc(c,f);if(!byte_minor--)--byte_maior;return r;}
 static int
-getc_counted(FILE*f)
+getc_counted(f)FILE*f;
 {int c=getc(f);if(c!=EOF)if(!++byte_minor)++byte_maior;
  if(c=='\n')if(!++line_minor)++line_maior;return c;
 }
 static void
-report_pos(void)
+report_pos()
 {fprintf(stderr,"error occured on ");
  if(byte_maior)fprintf(stderr,"0x%8.8lX%8.8lX",byte_maior,byte_minor);
  else fprintf(stderr,"%lu",byte_minor);
@@ -266,10 +281,10 @@ report_pos(void)
   articles,content_records);
 }
 static int
-sort_weight(char c)
+sort_weight(c)char c;
 {return sort_table[sort_table_mask&(unsigned char)c];}
 static int
-compare_titles(const char*a,const char*b)
+compare_titles(a,b)const char*a,*b;
 {for(;*a&&*b;a++,b++)
  {if(sort_weight(*a)>sort_weight(*b))return 1;
   if(sort_weight(*a)<sort_weight(*b))return-1;
@@ -279,7 +294,7 @@ compare_titles(const char*a,const char*b)
  return 0;
 }
 static int
-read_title(FILE*f)
+read_title(f)FILE*f;
 {int c,n;static int compare_previous;char*p;
  p=prev_title_buf;prev_title_buf=upcased_title_buf;
  upcased_title_buf=p;
@@ -303,7 +318,7 @@ read_title(FILE*f)
  }compare_previous=!0;
  if(max_title_observed<n)max_title_observed=n;return n;
 }static int
-read_article(FILE*f)
+read_article(f)FILE*f;
 {int c;unsigned n,size=sizeof(record_tail)-2;char*buf=record_tail;
  c=read_title(f);if(c<=0)return c*0x33;
  if((n=strlen(title_buf)+1)>size)
@@ -340,10 +355,10 @@ read_article(FILE*f)
  }return n+1;
 }
 static unsigned
-additional_stuff(unsigned articles)
+additional_stuff(articles)unsigned articles;
 {return content_constant_header_size+articles*content_increment_size;}
 static void
-print_indices_statistics(void)
+print_indices_statistics()
 {int i;total_records=0;
  for(i=0;i<max_arity;i++)
  {printf("%i-ary index: %lu records\n",
@@ -361,7 +376,7 @@ print_indices_statistics(void)
 }
 static unsigned long max_art_per_rec;
 static void
-print_statistics(void)
+print_statistics()
 {printf("database name:  `%s'\n",db_name);
  printf("full comment:   `%s'\n",comment_string);
  print_indices_statistics();
@@ -374,7 +389,7 @@ print_statistics(void)
  printf("total bytes:     %lu\n",byte_minor-1);
 }
 static void
-write_idx_record(int ary)
+write_idx_record(ary)int ary;
 {struct current_index_pointer*ci=current_indices+ary;
  FILE*f;unsigned i,n;const char*p;
  if(!ci->content)ci->content=index_file(ary,"wb");f=ci->content;
@@ -385,7 +400,7 @@ write_idx_record(int ary)
   while(*++p)++n;p++;n+=2;
  }for(i=0,p=ci->buf;i<ci->caput;i++,p++)fputc_counted(*p,f);
 }static int
-add_record_to_indices(int i)
+add_record_to_indices(i)int i;
 {struct current_index_pointer*ci=current_indices+i;
  int n=strlen(title_buf)+1;if(i>=max_arity)return 0;
  ci->overall_items++;
@@ -396,14 +411,14 @@ add_record_to_indices(int i)
   if(ci->caput+n+additional_index_stuff(ci->items+1)>=ci->buf_size)
   {fprintf(stderr,"too long item\n");report_pos();return-1;}
  }if(!ci->items)add_record_to_indices(i+1);
- ci->items++;memmove(ci->buf+ci->caput,upcased_title_buf,n);
+ ci->items++;memcpy(ci->buf+ci->caput,upcased_title_buf,n);
  ci->caput+=n;return 0;
 }
 unsigned short
-get_hu(FILE*f)
+get_hu(f)FILE*f;
 {return (getc_counted(f)<<bits_per_byte)|getc_counted(f);}
 unsigned long
-get_ul(FILE*f)
+get_ul(f)FILE*f;
 {return((unsigned long)(getc_counted(f))<<(bits_per_byte*3))
   |((unsigned long)(getc_counted(f))<<(bits_per_byte*2))
   |((unsigned long)(getc_counted(f))<<bits_per_byte)
@@ -411,14 +426,14 @@ get_ul(FILE*f)
 }
 static unsigned first_record_size;
 unsigned
-max_arity_present(void)
+max_arity_present()
 {unsigned i;
  for(i=0;i<max_arity;i++)
   if(!current_indices[i].records)break;
  return i+1;
 }
 static int
-write_record_entries(FILE*f,unsigned long pos)
+write_record_entries(f,pos)FILE*f;unsigned long pos;
 {int c;unsigned i,j,k,entries=0;FILE*in=content_file;
  redopen_indicium_contents();byte_minor=pos;byte_maior=0;
  if(verbous)printf("record entries %lu (%lu)\n",out_cnt_minor,byte_minor);
@@ -483,7 +498,7 @@ write_record_entries(FILE*f,unsigned long pos)
  }if(verbous)printf("list entries %u\n",entries);
  return 0;
 }static void
-write_record_list(FILE*db)
+write_record_list(db)FILE*db;
 {unsigned tr=total_records;
  write_lu(db,0);write_hu(db,tr);
  if(!total_records){write_hu(db,0);return;}
@@ -491,7 +506,7 @@ write_record_list(FILE*db)
  if(verbous)printf("records begin %lu\n",out_cnt_minor);
 }
 static int
-write_records(FILE*db)
+write_records(db)FILE*db;
 {int c;unsigned cur_rec,i,j;
  redopen_indicium_contents();
  {unsigned ma=max_arity_present();unsigned long pos0=out_cnt_minor;
@@ -500,8 +515,10 @@ write_records(FILE*db)
   write_hu(db,0);write_hu(db,1);
   cur_rec=content_records+2;write_hu(db,cur_rec);
   if(verbous)
-   printf(" arity %u; volumes %u; vol %u;content start %u;"
-          "primary start %u\n",ma,1,0,1,cur_rec);
+  {printf(" arity %u; volumes %u; vol %u;content start %u; ",
+    ma,1,0,1);
+   printf("primary start %u\n",cur_rec);
+  }
   for(i=0;i<ma-1;i++)
   {cur_rec+=current_indices[i].records+1;write_hu(db,cur_rec);}
   if(features&sort_table_bit)
@@ -551,7 +568,7 @@ write_records(FILE*db)
   }
  }return 0;
 }static void
-write_header(FILE*db)
+write_header(db)FILE*db;
 {write_name(db);write_attributes(db);write_version(db);
  write_creation_date(db);write_modification_date(db);
  write_last_backup_date(db);write_modification_number(db);
@@ -559,12 +576,53 @@ write_header(FILE*db)
  write_type(db);write_creator(db);
  write_unique_id_seed(db);write_record_list(db); 
 }static int
-write_database(FILE*db)
+write_database(db)FILE*db;
 {int r;out_cnt_minor=out_cnt_maior=0;write_header(db);
  r=write_records(db);fclose(db);return r;
 }static unsigned art_in_record;
+/* the next function comes from zlib sources (it is compress2)
+   we put it here for compatibility with older ZLIBs;
+   this piece of code should be considered an external library */
 static int
-write_content_record(unsigned caput)
+compress_2 (dest, destLen, source, sourceLen, level)
+    Bytef *dest;
+    uLongf *destLen;
+    const Bytef *source;
+    uLong sourceLen;
+    int level;
+{
+    z_stream stream;
+    int err;
+
+    stream.next_in = (Bytef*)source;
+    stream.avail_in = (uInt)sourceLen;
+#ifdef MAXSEG_64K
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != sourceLen) return Z_BUF_ERROR;
+#endif
+    stream.next_out = dest;
+    stream.avail_out = (uInt)*destLen;
+    if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
+
+    stream.zalloc = (alloc_func)0;
+    stream.zfree = (free_func)0;
+    stream.opaque = (voidpf)0;
+
+    err = deflateInit(&stream, level);
+    if (err != Z_OK) return err;
+
+    err = deflate(0, &stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        deflateEnd(0, &stream);
+        return err == Z_OK ? Z_BUF_ERROR : err;
+    }
+    *destLen = stream.total_out;
+
+    err = deflateEnd(0, &stream);
+    return err;
+}
+static int
+write_content_record(caput)unsigned caput;
 {FILE*f=content_file;unsigned j,n;int i;const char*p;
  n=art_in_record*pointer_to_article_size
    +content_constant_header_size;
@@ -577,8 +635,8 @@ write_content_record(unsigned caput)
    for(j=0;j<3;j++){while(*p){++p;++n;}p++;n++;}
   }caput+=m;
   {uLongf dest_len=compressed_record_length,source_len=caput;
-   ret=compress2((Bytef*)compressed_record_buf,&dest_len,
-     (const Bytef*)record_buf,source_len,9);
+   ret=compress_2((Bytef*)compressed_record_buf,&dest_len,
+     (const Bytef*)record_buf,source_len,Z_BEST_COMPRESSION);
    if(ret!=Z_OK){fprintf(stderr,"compression failed\n");return!0;}
    write_hu(f,dest_len+palm_ushort_size);write_hu(f,source_len);
    for(i=0;i<dest_len;i++)fputc_counted(compressed_record_buf[i],f);
@@ -591,10 +649,9 @@ write_content_record(unsigned caput)
  }return 0;
 }
 static int
-assign_sort_table(void)
+assign_sort_table()
 {static const char default_order[]=
-  "aA bB cC dD eE fF gG hH iI jJ kK lL mM\n"
-  "nN oO pP qQ rR sS tT uU vV wW xX yY zZ";
+  "aA bB cC dD eE fF gG hH iI jJ kK lL mM\nnN oO pP qQ rR sS tT uU vV wW xX yY zZ";
  int i,assigned=1;char*s=sort_order;
  if(*s)
  {features|=sort_table_bit;
@@ -619,7 +676,7 @@ assign_sort_table(void)
  return 0;
 }
 static int
-read_preamble(FILE*f)
+read_preamble(f)FILE*f;
 {int c,*caput,ccaput=0,scaput=0,size;char*buf;*sort_order=0;
  while(1)
  {c=getc_counted(f);
@@ -655,7 +712,7 @@ read_preamble(FILE*f)
  }return!0;
 }
 static int
-count_content_records(void)
+count_content_records()
 {FILE*f;int n;unsigned caput=0;
  f=fopen(txt_name,"rt");
  if(!f)
@@ -672,7 +729,7 @@ count_content_records(void)
    if(n+caput+additional_stuff(art_in_record+1)>=record_length)
    {fprintf(stderr,"too long article\n");report_pos();return-1;}
   }if(!art_in_record)add_record_to_indices(0);
-  art_in_record++;memmove(record_buf+caput,record_tail,n);caput+=n;
+  art_in_record++;memcpy(record_buf+caput,record_tail,n);caput+=n;
  }
  if(art_in_record)
  {int i;write_content_record(caput);
@@ -689,7 +746,7 @@ count_content_records(void)
   fprintf(stderr,"last record title is `\n%s\n'\n",title_buf);
  }fclose(f);print_statistics();return 0;
 }static void
-close_all(void)
+close_all()
 {close_indices();
  if(compressed_record_buf)
  {free(compressed_record_buf);compressed_record_buf=0;}
@@ -699,7 +756,7 @@ close_all(void)
  if(upcased_title_buf)
  {free(upcased_title_buf);upcased_title_buf=0;}
 }static int
-parse_args(int argc,char**argv)
+parse_args(argc,argv)int argc;char**argv;
 {char*s;argc--;argv++;
  while(argc)
  {if(**argv!='-')
@@ -749,7 +806,7 @@ parse_args(int argc,char**argv)
  }return 0;
 }
 int
-main(int argc,char**argv)
+main(argc,argv)int argc;char**argv;
 {int ret=0;
  if(parse_args(argc,argv)){usage();return!0;}
  if(!txt_name){fprintf(stderr,"no input file defined\n");return!0;}

@@ -1,5 +1,15 @@
 /*ysort: yepos database pre-sort program*/
+#ifdef __STDC__
 #include<stdlib.h>
+#else
+#define const
+#endif
+#if NO_MALLOC_DECL
+extern char*malloc();
+#endif
+#if NO_REALLOC_DECL
+extern char*realloc();
+#endif
 #include<stdio.h>
 #include<string.h>
 #include"dynamic_buffer.h"
@@ -9,15 +19,15 @@ enum local_constants
 };
 static struct dynamic_buffer comment,sort_order,current_line;
 static void
-free_buffers(void)
+free_buffers()
 {free_buffer(&comment);free_buffer(&sort_order);
  free_buffer(&current_line);
 }
 static FILE*input,*output;
 static void
-close_files(void){if(input)fclose(input);if(output)fclose(output);}
+close_files(){if(input)fclose(input);if(output)fclose(output);}
 static int
-read_line(struct dynamic_buffer*b)
+read_line(b)struct dynamic_buffer*b;
 {int c;if(!input)return!0;clear_buffer(b);
  while(1)
  {c=getc(input);if(c=='\n'||c==EOF)break;
@@ -25,7 +35,7 @@ read_line(struct dynamic_buffer*b)
  }return 0;
 }
 static int
-read_preamble(void)
+read_preamble()
 {struct dynamic_buffer*buf;
  while(!feof(input))
  {if(read_line(&current_line))return!0;
@@ -39,10 +49,9 @@ read_preamble(void)
 }
 static unsigned char sort_table[sort_table_length];
 static int
-assign_sort_table(void)
+assign_sort_table()
 {static const char default_order[]=
-  " aA bB cC dD eE fF gG hH iI jJ kK lL mM\n"
-  " nN oO pP qQ rR sS tT uU vV wW xX yY zZ";
+  " aA bB cC dD eE fF gG hH iI jJ kK lL mM\n nN oO pP qQ rR sS tT uU vV wW xX yY zZ";
  unsigned long i,n=sort_order.used;int assigned=0;
  const char*s=sort_order.s;
  if(!n){n=strlen(default_order);s=default_order;}
@@ -65,9 +74,9 @@ struct title{char*title,*notes,*body;};
 static struct title*titles;
 unsigned long titles_num,titles_allocated,titles_used;
 static int
-read_titles(void)
-{struct title*t;
- titles_allocated=289;titles=malloc(titles_allocated*sizeof*titles);
+read_titles()
+{struct title*t;titles_allocated=289;
+ titles=(struct title*)malloc(titles_allocated*sizeof*titles);
  memset(titles,0,titles_allocated*sizeof*titles);
  do
  {unsigned long n=titles_used;
@@ -76,30 +85,30 @@ read_titles(void)
   if(n>=titles_allocated)
   {unsigned long ta=titles_allocated;
    titles_allocated+=titles_allocated/4;
-   titles=realloc(titles,titles_allocated*sizeof*titles);
+   titles=(struct title*)realloc(titles,titles_allocated*sizeof*titles);
    memset(titles+n,0,(titles_allocated-ta)*sizeof*titles);
    if(!titles)return!0;
   }titles_used++;
   t=titles+n;t->title=malloc(current_line.used+1);if(!t->title)return!0;
-  memmove(t->title,current_line.s,current_line.used);
+  memcpy(t->title,current_line.s,current_line.used);
   t->title[current_line.used]=0;
   if(read_line(&current_line))return!0;
   t->notes=malloc(current_line.used+1);if(!t->notes)return!0;
-  if(current_line.used)memmove(t->notes,current_line.s,current_line.used);
+  if(current_line.used)memcpy(t->notes,current_line.s,current_line.used);
   t->notes[current_line.used]=0;
   if(read_line(&current_line))return!0;
   t->body=malloc(current_line.used+1);if(!t->body)return!0;
-  if(current_line.used)memmove(t->body,current_line.s,current_line.used);
+  if(current_line.used)memcpy(t->body,current_line.s,current_line.used);
   t->body[current_line.used]=0;
   if(read_line(&current_line))return!0;
  }while(!feof(input));
  return 0;
 }
 static int
-sort_weight(char c)
+sort_weight(c)char c;
 {return sort_table[((unsigned char)c)&sort_table_mask];}
 static int
-compare_titles(const void*a_,const void*b_)
+compare_titles(a_,b_)const void*a_;const void*b_;
 {const struct title*at=(const struct title*)a_,
   *bt=(const struct title*)b_;
  const char*a=at->title,*b=bt->title;
@@ -112,18 +121,18 @@ compare_titles(const void*a_,const void*b_)
  return 0;
 }
 static void
-sort_titles(void)
+sort_titles()
 {if(titles_used<2)return;
  qsort(titles,titles_used,sizeof*titles,compare_titles);
 }
 static void
-output_title(struct title*t)
+output_title(t)struct title*t;
 {fprintf(output,"%s\n",t->title);
  fprintf(output,"%s\n",t->notes?t->notes:"");
  fprintf(output,"%s\n",t->body?t->body:"");
 }
 static void
-free_titles(void)
+free_titles()
 {unsigned long i;
  for(i=0;i<titles_used;i++)
  {if(titles[i].title)free(titles[i].title);
@@ -131,33 +140,37 @@ free_titles(void)
   if(titles[i].body)free(titles[i].body);
  }if(titles)free(titles);
 }
+#ifndef __DATE__
+#define __DATE__ "[some day]"
+#endif
 static void
-usage(void)
+usage()
 {static const char THYNAME[]="ysort";
- printf("%s 0.0 (built "__DATE__"): yepos input pre-sort program\n"
-  "Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n"
-  "%s comes with NO WARRANTY, to the extent permitted by law.\n"
-  "You may redistribute copies of %s\n"
-  "under the terms of the GNU GPL v3+\n"
-  "Usage: %s unsorted.txt sorted.txt\n",
-  THYNAME,THYNAME,THYNAME,THYNAME);
+ printf("%s 0.0 (built %s): yepos input pre-sort program\n",
+  THYNAME,__DATE__);
+ printf("Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n");
+ printf("%s comes with NO WARRANTY, to the extent permitted by law.\n",
+  THYNAME);
+ printf("You may redistribute copies of %s\n",THYNAME);
+ printf("under the terms of the GNU GPL v3+\n");
+ printf("Usage: %s unsorted.txt sorted.txt\n",THYNAME);
 }
 static void
-output_buf(struct dynamic_buffer*b,FILE*f)
+output_buf(b,f)struct dynamic_buffer*b;FILE*f;
 {unsigned long i;
  for(i=0;i<b->used;i++)putc(b->s[i],f);
 }
 static void
-output_comment(void){output_buf(&comment,output);}
+output_comment(){output_buf(&comment,output);}
 static void
-output_sort_order(void){output_buf(&sort_order,output);}
+output_sort_order(){output_buf(&sort_order,output);}
 static void
-output_titles(void)
+output_titles()
 {unsigned long i;for(i=0;i<titles_used;i++)output_title(titles+i);}
 void
-close_all(void){free_buffers();close_files();free_titles();}
+close_all(){free_buffers();close_files();free_titles();}
 int
-process_all(int argc,char**argv)
+process_all(argc,argv)int argc;char**argv;
 {usage();if(argc<3)return!0;
  printf("\ninput: `%s'; output: `%s'\n",argv[1],argv[2]);
  input=fopen(argv[1],"rt");
@@ -184,7 +197,7 @@ process_all(int argc,char**argv)
  return 0;
 }
 int
-main(int argc,char**argv)
+main(argc,argv)int argc;char**argv;
 {int ret=process_all(argc,argv);close_all();return ret;}
 /*Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93
 

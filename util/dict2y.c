@@ -1,13 +1,23 @@
 /* convert dictunformat(1) output into yeposc input format
  Usage:
   dictunformat serb2croat.index<serb2croat.dict | dict2y>serb2croat.txt */
-#include<stdio.h>
+#ifdef __STDC__
 #include<stdlib.h>
+#else
+#define const
+#endif
+#if NO_MALLOC_DECL
+extern char*malloc();
+#endif
+#if NO_REALLOC_DECL
+extern char*realloc();
+#endif
+#include<stdio.h>
 #include<string.h>
 #include"dynamic_buffer.h"
 #define DEBUG 0
 static void
-output_buffer(const struct dynamic_buffer*b,char prefix)
+output_buffer(b,prefix)const struct dynamic_buffer*b;char prefix;
 {int i;if(prefix)putchar(prefix);
  if(DEBUG){fprintf(stderr,"output buffer ");show_buff(b);}
  for(i=0;i<b->used;i++)
@@ -17,14 +27,14 @@ static struct dynamic_buffer current_line,
  current_head,current_title,current_body,
  database_info,database_short,database_url;
 void
-free_buffers(void)
+free_buffers()
 {free_buffer(&current_line);free_buffer(&current_head);
  free_buffer(&current_title);free_buffer(&current_body);
  free_buffer(&database_info);free_buffer(&database_short);
  free_buffer(&database_url);
 }
 static int
-read_line(struct dynamic_buffer*b)
+read_line(b)struct dynamic_buffer*b;
 {int c;clear_buffer(b);
  while(1)
  {c=getchar();if(c=='\n'||c==EOF)break;
@@ -32,7 +42,7 @@ read_line(struct dynamic_buffer*b)
  }return 0;
 }
 static void
-output_header(void)
+output_header()
 {if(database_short.used)
  {output_buffer(&database_short,'#');
   if(database_url.used||database_info.used)printf("#\n");
@@ -43,7 +53,7 @@ output_header(void)
  }
  if(database_info.used)output_buffer(&database_info,'#');
 }static int
-read_head(void)
+read_head()
 {while(1)
  {if(read_line(&current_head))return!0;
   if(DEBUG){fprintf(stderr,"read_head: ");show_buff(&current_head);}
@@ -60,7 +70,7 @@ static const char dbsig[]="00-database-",short_sig[]="00-database-short",
  info_sig[]="00-database-info",url_sig[]="00-database-url";
 static int header_gone;
 static int
-match_header(struct dynamic_buffer*b,const char*sig)
+match_header(b,sig)struct dynamic_buffer*b;const char*sig;
 {int n;if(header_gone)return 0;n=strlen(sig);
  if(DEBUG)
  {fprintf(stderr,"matching against `%s' head ",sig);
@@ -71,7 +81,7 @@ match_header(struct dynamic_buffer*b,const char*sig)
  clear_buffer(b);return append_chars(b,current_body.s,current_body.used);
 }
 static void
-output_article(void)
+output_article()
 {output_buffer(&current_head,0);
  {char*s=current_title.s;unsigned long n=current_title.used;
   if(current_head.used<=current_title.used
@@ -82,13 +92,13 @@ output_article(void)
  }output_buffer(&current_body,0);
 }
 static int
-add_body_line(const struct dynamic_buffer*b)
+add_body_line(b)const struct dynamic_buffer*b;
 {int i;
  for(i=0;i<b->used&&b->s[i]==' ';i++);
  return append_chars(&current_body,b->s+i,b->used-i);
 }
 static int
-read_body(void)
+read_body()
 {if(DEBUG)
  {fprintf(stderr,"current title ");show_buff(&current_title);}
  while(!(read_line(&current_line)||feof(stdin)))
@@ -105,14 +115,14 @@ read_body(void)
    if(header_gone)output_article();return 0;
   }
   if(current_body.used)
-  {char s[0x11];if(header_gone)sprintf(s," ||");else sprintf(s,"\n");
+  {const char *s=header_gone?" ||":"\n";
    if(append_chars(&current_body,s,strlen(s)))return!0;
   }
   if(add_body_line(&current_line))return!0;
  }if(header_gone&&current_body.used)output_article();return!0;
 }
 static int
-read_title(void)
+read_title()
 {int n=strlen(dbsig);clear_buffer(&current_title);clear_buffer(&current_body);
  if(DEBUG){fprintf(stderr,"current head ");show_buff(&current_head);}
  if(n>current_head.used)n=current_head.used;
@@ -127,27 +137,32 @@ read_title(void)
  }return 0;
 }
 static int
-process_next_article(void)
+process_next_article()
 {return!(read_head()||read_title()||read_body());}
+#ifndef __DATE__
+#define __DATE__ "[some day]"
+#endif
 static void
-usage(void)
+usage()
 {static const char THYNAME[]="dict2y";
- printf("%s 0.1 (built "__DATE__"): DICT to yeposc input format converter\n"
- "Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n"
- "%s comes with NO WARRANTY, to the extent permitted by law.\n"
- "You may redistribute copies of %s under the terms of the GNU GPL v3+\n"
- "Usage: dictunformat serb2croat.index <serb2croat.dict \\\n"
- "       | %s >serb2croat.txt\n"
- "  where\n"
- "   dictunformat is a program coming with dictd distribution;\n"
- "   serb2croat.index is DICT database index file name;\n"
- "   serb2croat.dict is DICT uncompressed database file name\n"
- "    (typical uncompression command is\n"
- "     `gzip -dc <serb2croat.dict.dz >serb2croat.dict')\n",
- THYNAME,THYNAME,THYNAME,THYNAME);
+ printf("%s 0.1 (built %s): DICT to yeposc input format converter\n",
+  THYNAME,__DATE__);
+ printf("Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93\n");
+ printf("%s comes with NO WARRANTY, to the extent permitted by law.\n",
+  THYNAME);
+ printf("You may redistribute copies of %s under the terms of the GNU GPL v3+\n",
+  THYNAME);
+ printf("Usage: dictunformat serb2croat.index <serb2croat.dict \\\n");
+ printf("       | %s >serb2croat.txt\n",THYNAME);
+ printf("  where\n");
+ printf("   dictunformat is a program coming with dictd distribution;\n");
+ printf("   serb2croat.index is DICT database index file name;\n");
+ printf("   serb2croat.dict is DICT uncompressed database file name\n");
+ printf("    (typical uncompression command is\n");
+ printf("     `gzip -dc <serb2croat.dict.dz >serb2croat.dict')\n");
 }
 int
-main(int argc,char**argv)
+main(argc,argv)int argc;char**argv;
 {if(argc>1){usage();return!0;}
  while(process_next_article()&&!feof(stdin));free_buffers();return 0;
 }/*Copyright (C) 2009 Ineiev<ineiev@users.berlios.de>, super V 93
