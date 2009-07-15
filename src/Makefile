@@ -4,7 +4,7 @@ CC = m68k-palmos-gcc
 LD = m68k-palmos-gcc
 CPPFLAGS = -I../extern -I. -DNEWGCC
 CFLAGS = -Wall -O2
-yepos_version=post-0.2-rc0
+yepos_version=0.2-rc1
 #whether to build executables for all languages (not only Latin)
 BUILD_LANGS=1
 #whether to build test prcs
