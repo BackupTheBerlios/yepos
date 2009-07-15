@@ -3,6 +3,79 @@ You may want to edit it manually if you distribute
 your changes without accessing git repository
 
 Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Wed Jul 15 20:26:16 2009 +0400
+
+    bump version to 0.2-rc1
+
+* src/Makefile
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Mon Jun 1 14:10:18 2009 +0400
+
+    approach to ancient hosts
+
+    in particular, make utils buildable under Quasijarus
+    (CFLAGS="-DNO_MALLOC_DECL -DNO_REALLOC_DECL -DNO_REMOVE" make -e)
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+* util/Makefile
+* util/deyepos.c
+* util/dict2y.c
+* util/dynamic_buffer.h
+* util/yeposc.c
+* util/ysort.c
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Sun May 31 19:52:44 2009 +0400
+
+    some more documentation
+
+* doc/en/yepos.html
+* doc/ru/yepos.html
+* doc/yepos.html
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Sun May 31 19:14:10 2009 +0400
+
+    fix some corner cases for article search
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Fri May 29 15:11:13 2009 +0400
+
+    fix compare_item
+
+    it should be asymmetric: if search word
+    shorter than article title it should return 0
+
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Thu May 28 20:56:07 2009 +0400
+
+    switch off benchmarks
+
+* src/settings.c
+* src/yepos.c
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Thu May 28 20:55:22 2009 +0400
+
+    bump version to post-0.2-rc0
+
+* src/Makefile
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
+Date:   Tue May 26 21:10:52 2009 +0400
+
+    regen ChangeLog
+
+* ChangeLog
+
+Author: D.T.Ineiev <ineiev@users.berlios.de>
 Date:   Tue May 26 20:41:06 2009 +0000
 
     bump version to 0.2-rc0
